@@ -41,7 +41,7 @@ const Bills: React.FC<BillsProps> = ({ bills, onAddBill, onDeleteBill, canAdd, c
   const onDrop = (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (file) {
-      // In a real app, upload to Supabase Storage
+      // In a real app, upload to InsForge Storage
       // For now, we'll simulate with a blob URL
       setNewBill(prev => ({
         ...prev,

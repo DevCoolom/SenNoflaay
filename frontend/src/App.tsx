@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { insforge } from './lib/insforge';
 import Layout from './components/Layout';
 import Members from './components/Members';
 import Finance from './components/Finance';
@@ -98,21 +99,28 @@ function AppContent() {
     e.preventDefault();
     setLoginError('');
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(loginData)
-      });
-      
-      if (response.ok) {
-        const userData = await response.json();
+      const { data, error } = await insforge.database.from('users')
+        .select('*')
+        .eq('association_id', loginData.associationId)
+        .eq('username', loginData.username)
+        .eq('password', loginData.password)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        const userData = {
+          username: data.username,
+          role: data.role,
+          associationId: data.association_id
+        };
         setUser(userData);
         sessionStorage.setItem('pkst_user', JSON.stringify(userData));
       } else {
-        const err = await response.json();
-        setLoginError(err.error || 'Invalid credentials');
+        setLoginError('Invalid credentials');
       }
     } catch (error) {
+      console.error('Login error:', error);
       setLoginError('Connection error');
     }
   };
@@ -129,27 +137,48 @@ function AppContent() {
 
     try {
       const capitalizedUsername = regData.adminUsername.charAt(0).toUpperCase() + regData.adminUsername.slice(1);
-      const dataToSubmit = { ...regData, adminUsername: capitalizedUsername };
       
-      console.log('Registering association:', dataToSubmit);
-      const response = await fetch('/api/associations/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSubmit)
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        setIsRegistering(false);
-        setLoginData({ associationId: regData.id, username: capitalizedUsername, password: regData.adminPassword });
-        alert('Association registered successfully! Please login with your admin credentials.');
-      } else {
-        setLoginError(data.error || 'Registration failed');
+      // Check if association already exists
+      const { data: existingAssoc } = await insforge.database.from('associations')
+        .select('id')
+        .eq('id', regData.id)
+        .maybeSingle();
+
+      if (existingAssoc) {
+        setLoginError('Association ID already exists. Please choose another one.');
+        return;
       }
-    } catch (error) {
+
+      const createdAt = new Date().toISOString();
+      
+      // Perform registration as a sequence of inserts (no transaction support in JS client for different tables, but usually fine for this)
+      const { error: assocError } = await insforge.database.from('associations')
+        .insert({ id: regData.id, name: regData.name, created_at: createdAt });
+
+      if (assocError) throw assocError;
+
+      const { error: userError } = await insforge.database.from('users')
+        .insert({
+          username: capitalizedUsername,
+          association_id: regData.id,
+          password: regData.adminPassword,
+          role: 'superadmin'
+        });
+
+      if (userError) throw userError;
+
+      await insforge.database.from('settings').insert([
+        { association_id: regData.id, key: 'logo_url', value: '' },
+        { association_id: regData.id, key: 'app_name', value: regData.name }
+      ]);
+
+      setIsRegistering(false);
+      setLoginData({ associationId: regData.id, username: capitalizedUsername, password: regData.adminPassword });
+      alert('Association registered successfully! Please login with your admin credentials.');
+      
+    } catch (error: any) {
       console.error('Registration error:', error);
-      setLoginError('Connection error. Please check if the server is running.');
+      setLoginError(error.message || 'Registration failed');
     }
   };
 
