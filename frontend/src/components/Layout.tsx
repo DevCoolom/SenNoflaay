@@ -71,11 +71,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
         <div className="p-8 flex flex-col gap-4">
           {settings?.logo_url ? (
             <img src={settings.logo_url} alt="Logo" className="h-16 w-auto object-contain self-start" />
-          ) : (
-            <div className="bg-brand-600 p-2.5 rounded-2xl shadow-lg shadow-brand-100 w-fit">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-          )}
+          ) : null}
           <h1 className="text-xl font-serif font-bold text-slate-900 tracking-tight leading-tight">
             {settings?.app_name || t('appTitle')}
           </h1>
@@ -169,11 +165,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
           <div className="flex items-center gap-3">
             {settings?.logo_url ? (
               <img src={settings.logo_url} alt="Logo" className="h-10 w-auto object-contain" />
-            ) : (
-              <div className="bg-brand-600 p-2 rounded-xl">
-                <Users className="w-5 h-5 text-white" />
-              </div>
-            )}
+            ) : null}
             <h1 className="text-lg font-serif font-bold text-slate-900 tracking-tight">
               {settings?.app_name || t('appTitle')}
             </h1>

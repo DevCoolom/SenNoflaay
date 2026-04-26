@@ -39,9 +39,6 @@ const MarketingLayout: React.FC<MarketingLayoutProps> = ({ children }) => {
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="bg-brand-600 p-2 rounded-xl shadow-lg shadow-brand-100 group-hover:scale-110 transition-transform">
-              <Shield className="w-6 h-6 text-white" />
-            </div>
             <span className="text-2xl font-bold tracking-tight text-slate-900 font-serif">SenNoflaay</span>
           </Link>
           
@@ -122,9 +119,6 @@ const MarketingLayout: React.FC<MarketingLayoutProps> = ({ children }) => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-3 mb-8">
-                <div className="bg-brand-600 p-2 rounded-xl">
-                  <Shield className="w-6 h-6 text-white" />
-                </div>
                 <span className="text-3xl font-serif font-bold tracking-tight">SenNoflaay</span>
               </div>
               <p className="text-slate-400 max-w-sm text-lg leading-relaxed mb-8">
