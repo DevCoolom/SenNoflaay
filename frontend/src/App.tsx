@@ -20,10 +20,29 @@ import { Member, User, Objective, Event, Bill, Expense } from './types';
 import { formatCurrency } from './lib/utils';
 import { Shield, Lock, User as UserIcon, Globe, Clock, MapPin, Calendar as CalendarIcon, Users as UsersIcon } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './lib/LanguageContext';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+
+// Marketing Pages
+import Home from './marketing/Home';
+import FeaturesPage from './marketing/Features';
+import Pricing from './marketing/Pricing';
+import Security from './marketing/Security';
+import FAQ from './marketing/FAQ';
+import Demo from './marketing/Demo';
+import Support from './marketing/Support';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 export default function App() {
   return (
     <LanguageProvider>
+      <ScrollToTop />
       <AppContent />
     </LanguageProvider>
   );
@@ -192,198 +211,196 @@ function AppContent() {
     sessionStorage.removeItem('pkst_user');
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-6 transition-colors duration-300 font-sans">
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="bg-white p-12 rounded-[3rem] card-shadow w-full max-w-lg border border-slate-100 transition-all relative overflow-hidden"
-        >
-          {/* Decorative background element */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50/50 rounded-full -mr-16 -mt-16 blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-50/50 rounded-full -ml-16 -mb-16 blur-3xl" />
+  const loginView = (
+    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-6 transition-colors duration-300 font-sans">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="bg-white p-12 rounded-[3rem] card-shadow w-full max-w-lg border border-slate-100 transition-all relative overflow-hidden"
+      >
+        {/* Decorative background element */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50/50 rounded-full -mr-16 -mt-16 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-50/50 rounded-full -ml-16 -mb-16 blur-3xl" />
 
-          <div className="flex flex-col items-center mb-12 relative z-10">
-            <div className="bg-brand-600 p-6 rounded-[2rem] mb-6 shadow-2xl shadow-brand-100">
-              <Shield className="w-12 h-12 text-white" />
-            </div>
-            <h2 className="text-3xl font-serif font-bold text-slate-900 text-center leading-tight">
-              {isRegistering ? 'Register Association' : (settings.app_name || 'Association Management')}
-            </h2>
-            <div className="h-1 w-12 bg-brand-600 rounded-full mt-4 mb-2" />
-            <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-              {isRegistering ? 'Create your platform account' : 'Sign in to your association'}
-            </p>
+        <div className="flex flex-col items-center mb-12 relative z-10">
+          <div className="bg-brand-600 p-6 rounded-[2rem] mb-6 shadow-2xl shadow-brand-100">
+            <Shield className="w-12 h-12 text-white" />
           </div>
+          <h2 className="text-3xl font-serif font-bold text-slate-900 text-center leading-tight">
+            {isRegistering ? 'Register Association' : (settings.app_name || 'Association Management')}
+          </h2>
+          <div className="h-1 w-12 bg-brand-600 rounded-full mt-4 mb-2" />
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+            {isRegistering ? 'Create your platform account' : 'Sign in to your association'}
+          </p>
+        </div>
 
-          {!isRegistering ? (
-            <form onSubmit={handleLogin} className="space-y-6 relative z-10">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Association ID</label>
-                <div className="relative group">
-                  <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
-                  <input
-                    type="text"
-                    required
-                    className="w-full pl-12 pr-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium"
-                    placeholder="e.g. my-assoc"
-                    value={loginData.associationId}
-                    onChange={e => setLoginData(prev => ({ ...prev, associationId: e.target.value }))}
-                  />
-                </div>
+        {!isRegistering ? (
+          <form onSubmit={handleLogin} className="space-y-6 relative z-10">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Association ID</label>
+              <div className="relative group">
+                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
+                <input
+                  type="text"
+                  required
+                  className="w-full pl-12 pr-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium"
+                  placeholder="e.g. my-assoc"
+                  value={loginData.associationId}
+                  onChange={e => setLoginData(prev => ({ ...prev, associationId: e.target.value }))}
+                />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('username')}</label>
-                <div className="relative group">
-                  <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
-                  <input
-                    type="text"
-                    required
-                    className="w-full pl-12 pr-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium"
-                    placeholder={t('username')}
-                    value={loginData.username}
-                    onChange={e => setLoginData(prev => ({ ...prev, username: e.target.value }))}
-                  />
-                </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('username')}</label>
+              <div className="relative group">
+                <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
+                <input
+                  type="text"
+                  required
+                  className="w-full pl-12 pr-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium"
+                  placeholder={t('username')}
+                  value={loginData.username}
+                  onChange={e => setLoginData(prev => ({ ...prev, username: e.target.value }))}
+                />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('password')}</label>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
-                  <input
-                    type="password"
-                    required
-                    className="w-full pl-12 pr-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium"
-                    placeholder={t('password')}
-                    value={loginData.password}
-                    onChange={e => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                  />
-                </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('password')}</label>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
+                <input
+                  type="password"
+                  required
+                  className="w-full pl-12 pr-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium"
+                  placeholder={t('password')}
+                  value={loginData.password}
+                  onChange={e => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                />
               </div>
+            </div>
 
-              {loginError && (
-                <motion.p 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="text-xs text-red-500 font-bold text-center uppercase tracking-wider"
-                >
-                  {loginError}
-                </motion.p>
-              )}
-
-              <button
-                type="submit"
-                className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-5 rounded-2xl transition-all shadow-xl shadow-brand-100 active:scale-[0.98] text-xs uppercase tracking-[0.2em] mt-4"
+            {loginError && (
+              <motion.p 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-xs text-red-500 font-bold text-center uppercase tracking-wider"
               >
-                {t('signIn')}
-              </button>
+                {loginError}
+              </motion.p>
+            )}
 
-              <div className="text-center mt-4">
-                <button 
-                  type="button"
-                  onClick={() => setIsRegistering(true)}
-                  className="text-[10px] text-brand-600 font-bold uppercase tracking-widest hover:underline"
-                >
-                  Register your association
-                </button>
-              </div>
-            </form>
-          ) : (
-            <form onSubmit={handleRegister} className="space-y-4 relative z-10">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Assoc ID</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
-                    placeholder="e.g. my-assoc"
-                    value={regData.id}
-                    onChange={e => setRegData(prev => ({ ...prev, id: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Assoc Name</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
-                    placeholder="Association Name"
-                    value={regData.name}
-                    onChange={e => setRegData(prev => ({ ...prev, name: e.target.value }))}
-                  />
-                </div>
-              </div>
+            <button
+              type="submit"
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-5 rounded-2xl transition-all shadow-xl shadow-brand-100 active:scale-[0.98] text-xs uppercase tracking-[0.2em] mt-4"
+            >
+              {t('signIn')}
+            </button>
+
+            <div className="text-center mt-4">
+              <button 
+                type="button"
+                onClick={() => setIsRegistering(true)}
+                className="text-[10px] text-brand-600 font-bold uppercase tracking-widest hover:underline"
+              >
+                Register your association
+              </button>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={handleRegister} className="space-y-4 relative z-10">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Username</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Assoc ID</label>
                 <input
                   type="text"
                   required
                   className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
-                  placeholder="Admin Username"
-                  value={regData.adminUsername}
-                  onChange={e => setRegData(prev => ({ ...prev, adminUsername: e.target.value }))}
+                  placeholder="e.g. my-assoc"
+                  value={regData.id}
+                  onChange={e => setRegData(prev => ({ ...prev, id: e.target.value }))}
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Password</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Assoc Name</label>
                 <input
-                  type="password"
+                  type="text"
                   required
                   className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
-                  placeholder="Admin Password"
-                  value={regData.adminPassword}
-                  onChange={e => setRegData(prev => ({ ...prev, adminPassword: e.target.value }))}
+                  placeholder="Association Name"
+                  value={regData.name}
+                  onChange={e => setRegData(prev => ({ ...prev, name: e.target.value }))}
                 />
               </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Username</label>
+              <input
+                type="text"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
+                placeholder="Admin Username"
+                value={regData.adminUsername}
+                onChange={e => setRegData(prev => ({ ...prev, adminUsername: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Password</label>
+              <input
+                type="password"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
+                placeholder="Admin Password"
+                value={regData.adminPassword}
+                onChange={e => setRegData(prev => ({ ...prev, adminPassword: e.target.value }))}
+              />
+            </div>
 
-              {loginError && (
-                <motion.p 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="text-xs text-red-500 font-bold text-center uppercase tracking-wider"
-                >
-                  {loginError}
-                </motion.p>
-              )}
-
-              <button
-                type="submit"
-                className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-brand-100 text-xs uppercase tracking-[0.2em] mt-4"
+            {loginError && (
+              <motion.p 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-xs text-red-500 font-bold text-center uppercase tracking-wider"
               >
-                Create Association
+                {loginError}
+              </motion.p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-brand-100 text-xs uppercase tracking-[0.2em] mt-4"
+            >
+              Create Association
+            </button>
+
+            <div className="text-center mt-4">
+              <button 
+                type="button"
+                onClick={() => setIsRegistering(false)}
+                className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:underline"
+              >
+                Back to Login
               </button>
+            </div>
+          </form>
+        )}
 
-              <div className="text-center mt-4">
-                <button 
-                  type="button"
-                  onClick={() => setIsRegistering(false)}
-                  className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:underline"
-                >
-                  Back to Login
-                </button>
-              </div>
-            </form>
-          )}
+        <div className="mt-12 pt-8 border-t border-slate-50 text-center relative z-10">
+          <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest leading-relaxed">
+            Authorized access only.<br />Contact administrator for support.
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  );
 
-          <div className="mt-12 pt-8 border-t border-slate-50 text-center relative z-10">
-            <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest leading-relaxed">
-              Authorized access only.<br />Contact administrator for support.
-            </p>
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
-
-  const isSuperAdmin = user.role === 'superadmin';
-  const isAdmin = user.role === 'admin';
-  const isTreasury = user.role === 'treasury';
-  const isController = user.role === 'controller';
+  const isSuperAdmin = user?.role === 'superadmin';
+  const isAdmin = user?.role === 'admin';
+  const isTreasury = user?.role === 'treasury';
+  const isController = user?.role === 'controller';
 
   const canManageUsers = isSuperAdmin;
   const canViewAudit = isSuperAdmin;
@@ -391,7 +408,7 @@ function AppContent() {
   const canEdit = isSuperAdmin || isAdmin;
   const canDelete = isSuperAdmin || isAdmin;
 
-  return (
+  const authenticatedView = user && (
     <Layout 
       activeTab={activeTab} 
       setActiveTab={setActiveTab} 
@@ -677,6 +694,23 @@ function AppContent() {
         expenses={expenses}
       />
     </Layout>
+  );
+
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/features" element={<FeaturesPage />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/security" element={<Security />} />
+      <Route path="/faq" element={<FAQ />} />
+      <Route path="/demo" element={<Demo />} />
+      <Route path="/support" element={<Support />} />
+      
+      <Route path="/login" element={user ? <Navigate to="/app" /> : loginView} />
+      <Route path="/app" element={!user ? <Navigate to="/login" /> : authenticatedView} />
+      
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   );
 }
 
