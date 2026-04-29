@@ -35,7 +35,7 @@ const Support: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-32 px-6 bg-slate-50/50">
+      <section className="py-16 px-6 bg-slate-50/50">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <SupportCard 
@@ -60,7 +60,7 @@ const Support: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-32 px-6 bg-white">
+      <section className="py-16 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-serif font-bold text-slate-900 mb-16">Popular Guides</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -73,7 +73,7 @@ const Support: React.FC = () => {
       </section>
 
       {/* Contact Section */}
-      <section className="py-32 px-6">
+      <section className="py-16 px-6">
         <div className="max-w-4xl mx-auto bg-brand-600 rounded-[3rem] p-16 text-center text-white shadow-2xl shadow-brand-100">
           <h2 className="text-3xl font-serif font-bold mb-6">Need a custom solution?</h2>
           <p className="text-brand-100 text-lg mb-10">Our enterprise team specializes in custom integrations and migrations.</p>

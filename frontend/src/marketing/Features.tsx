@@ -108,7 +108,7 @@ const Features: React.FC = () => {
 
       {/* Feature Sections */}
       {features.map((feature, index) => (
-        <section key={feature.id} className={`py-32 px-6 ${index % 2 === 0 ? 'bg-slate-50/50' : 'bg-white'}`}>
+        <section key={feature.id} className={`py-16 px-6 ${index % 2 === 0 ? 'bg-slate-50/50' : 'bg-white'}`}>
           <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20">
             <div className={`flex-1 ${index % 2 !== 0 ? 'lg:order-2' : ''}`}>
               <div className="w-20 h-20 bg-brand-600 rounded-[2rem] flex items-center justify-center text-white mb-10 shadow-xl shadow-brand-100">
@@ -147,7 +147,7 @@ const Features: React.FC = () => {
       ))}
 
       {/* Grid Features (Additional ones) */}
-      <section className="py-32 px-6">
+      <section className="py-16 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-24">
             <h2 className="text-4xl font-serif font-bold text-slate-900 mb-6">And so much more.</h2>
@@ -178,7 +178,7 @@ const Features: React.FC = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-32 px-6 bg-brand-600">
+      <section className="py-16 px-6 bg-brand-600">
         <div className="max-w-4xl mx-auto text-center text-white">
           <h2 className="text-4xl md:text-5xl font-serif font-bold mb-10">See these tools in action.</h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">

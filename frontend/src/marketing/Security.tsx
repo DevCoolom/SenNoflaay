@@ -28,7 +28,7 @@ const Security: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-32 px-6 bg-slate-50/50">
+      <section className="py-16 px-6 bg-slate-50/50">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
             <SecurityFeature 
@@ -55,7 +55,7 @@ const Security: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-32 px-6 bg-white">
+      <section className="py-16 px-6 bg-white">
         <div className="max-w-4xl mx-auto">
           <div className="bg-slate-900 rounded-[3rem] p-12 md:p-20 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-600/20 rounded-full blur-[80px]" />

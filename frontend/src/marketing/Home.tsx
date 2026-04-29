@@ -21,7 +21,7 @@ const Home: React.FC = () => {
   return (
     <MarketingLayout>
       {/* Hero Section */}
-      <section className="relative pt-48 pb-32 px-6 overflow-hidden">
+      <section className="relative pt-32 pb-16 px-6 overflow-hidden">
         {/* Background Gradients */}
         <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-brand-50/50 rounded-full blur-[120px] -mr-32 -mt-32" />
         <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-emerald-50/30 rounded-full blur-[100px] -ml-20 -mb-20" />
@@ -96,7 +96,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Trust Strip */}
-      <section className="py-20 border-y border-slate-50 bg-white">
+      <section className="py-10 border-y border-slate-50 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-12">Trusted by 500+ Associations Worldwide</p>
           <div className="flex flex-wrap items-center justify-center gap-12 md:gap-24 opacity-40 grayscale hover:grayscale-0 transition-all">
@@ -111,7 +111,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Feature Highlights */}
-      <section className="py-32 px-6">
+      <section className="py-16 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-24">
             <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-6">Designed for every part of your operation.</h2>
@@ -160,7 +160,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Workflow Preview */}
-      <section className="py-32 px-6 bg-slate-900 text-white rounded-[4rem] mx-4 my-8 overflow-hidden relative">
+      <section className="py-16 px-6 bg-slate-900 text-white rounded-[4rem] mx-4 my-8 overflow-hidden relative">
         <div className="absolute top-0 right-0 w-96 h-96 bg-brand-600/10 rounded-full blur-[100px]" />
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20 relative z-10">
           <div className="flex-1">
@@ -219,7 +219,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Security Reassurance */}
-      <section className="py-32 px-6">
+      <section className="py-16 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="bg-brand-50 rounded-[3rem] p-12 md:p-20 flex flex-col md:flex-row items-center gap-16 border border-brand-100">
             <div className="w-24 h-24 bg-white rounded-[2rem] shadow-xl shadow-brand-100 flex items-center justify-center flex-shrink-0">
@@ -251,7 +251,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Pricing Teaser */}
-      <section className="py-32 px-6 bg-white">
+      <section className="py-16 px-6 bg-white">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-16">Simple plans for every size.</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
@@ -264,7 +264,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-32 px-6">
+      <section className="py-16 px-6">
         <div className="max-w-5xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
