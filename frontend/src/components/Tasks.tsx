@@ -138,14 +138,25 @@ const Tasks: React.FC<TasksProps> = ({
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className={cn(
-                    "hidden sm:inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest",
-                    task.status === 'todo' ? "bg-slate-50 text-slate-400" :
-                    task.status === 'in-progress' ? "bg-amber-50 text-amber-700" :
-                    "bg-emerald-50 text-emerald-700"
-                  )}>
-                    {task.status === 'in-progress' ? t('inProgress') : t(task.status)}
-                  </span>
+                  <select
+                    value={task.status}
+                    onChange={(e) => {
+                      if (canEdit) {
+                        onUpdateTask(task.id, { status: e.target.value as Task['status'] });
+                      }
+                    }}
+                    disabled={!canEdit}
+                    className={cn(
+                      "hidden sm:inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest cursor-pointer outline-none transition-colors border-none",
+                      task.status === 'todo' ? "bg-slate-50 text-slate-500 hover:bg-slate-100" :
+                      task.status === 'in-progress' ? "bg-amber-50 text-amber-700 hover:bg-amber-100" :
+                      "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                    )}
+                  >
+                    <option value="todo" className="font-sans normal-case text-sm text-slate-900">{t('todo')}</option>
+                    <option value="in-progress" className="font-sans normal-case text-sm text-slate-900">{t('inProgress')}</option>
+                    <option value="completed" className="font-sans normal-case text-sm text-slate-900">{t('completed')}</option>
+                  </select>
 
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     {canEdit && (
