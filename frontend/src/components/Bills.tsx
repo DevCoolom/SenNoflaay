@@ -94,13 +94,22 @@ const Bills: React.FC<BillsProps> = ({ bills, onAddBill, onDeleteBill, canAdd, c
           {t('billsInvoices')}
         </h3>
         {canAdd && (
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-brand-100 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            {t('addBill')}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={onImportBill}
+              className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border border-slate-100 transition-all"
+            >
+              <File className="w-4 h-4" />
+              {t('import') || 'Import'}
+            </button>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-brand-100 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              {t('addBill')}
+            </button>
+          </div>
         )}
       </div>
 

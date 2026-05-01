@@ -7,16 +7,17 @@ import {
   Clock, 
   Trash2, 
   Edit2,
-  AlertCircle
+  AlertCircle,
+  FileUp
 } from 'lucide-react';
 import { Reorder, AnimatePresence, motion } from 'motion/react';
 import { Task } from '../types';
 import { cn } from '../lib/utils';
 import { useLanguage } from '../lib/LanguageContext';
-
 interface TasksProps {
   tasks: Task[];
   onAddTask: () => void;
+  onImportTask: () => void;
   onUpdateTask: (id: string, task: Partial<Task>) => void;
   onDeleteTask: (id: string) => void;
   onReorderTasks: (tasks: Task[]) => void;
@@ -28,6 +29,7 @@ interface TasksProps {
 const Tasks: React.FC<TasksProps> = ({
   tasks,
   onAddTask,
+  onImportTask,
   onUpdateTask,
   onDeleteTask,
   onReorderTasks,
@@ -64,13 +66,22 @@ const Tasks: React.FC<TasksProps> = ({
         </div>
         
         {canAdd && (
-          <button
-            onClick={onAddTask}
-            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-brand-100 transition-all active:scale-[0.98]"
-          >
-            <Plus className="w-5 h-5" />
-            {t('newTask')}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={onImportTask}
+              className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border border-slate-100 transition-all"
+            >
+              <FileUp className="w-4 h-4" />
+              {t('import') || 'Import'}
+            </button>
+            <button
+              onClick={onAddTask}
+              className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-brand-100 transition-all active:scale-[0.98]"
+            >
+              <Plus className="w-5 h-5" />
+              {t('newTask')}
+            </button>
+          </div>
         )}
       </div>
 

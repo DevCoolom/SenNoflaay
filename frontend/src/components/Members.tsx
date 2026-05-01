@@ -7,7 +7,8 @@ import {
   Pencil, 
   Trash2,
   Phone,
-  User as UserIcon
+  User as UserIcon,
+  FileSpreadsheet
 } from 'lucide-react';
 import { Member, MembershipFeeConfig } from '../types';
 import { formatCurrency, getInitials } from '../lib/utils';
@@ -18,6 +19,7 @@ interface MembersProps {
   members: Member[];
   membershipFeeConfig: MembershipFeeConfig | null;
   onAddMember: () => void;
+  onImportMember: () => void;
   onEditMember: (member: Member) => void;
   onDeleteMember: (id: string) => void;
   onViewDetails: (member: Member) => void;
@@ -31,6 +33,7 @@ const Members: React.FC<MembersProps> = ({
   members, 
   membershipFeeConfig,
   onAddMember, 
+  onImportMember,
   onEditMember, 
   onDeleteMember, 
   onViewDetails,
@@ -287,13 +290,22 @@ const Members: React.FC<MembersProps> = ({
           </select>
         </div>
         {canAdd && (
-          <button
-            onClick={onAddMember}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-brand-100 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            {t('newMember')}
-          </button>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <button
+              onClick={onImportMember}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border border-slate-100 transition-all"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              {t('import') || 'Import'}
+            </button>
+            <button
+              onClick={onAddMember}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-brand-100 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              {t('newMember')}
+            </button>
+          </div>
         )}
       </div>
 

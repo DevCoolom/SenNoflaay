@@ -17,6 +17,7 @@ import { Book as BookIcon, Users } from 'lucide-react';
 interface EventsProps {
   events: Event[];
   onAddEvent: () => void;
+  onImportEvent: () => void;
   onEditEvent: (event: Event) => void;
   onDeleteEvent: (id: string) => void;
   onViewEvent: (event: Event) => void;
@@ -25,7 +26,7 @@ interface EventsProps {
   canDelete: boolean;
 }
 
-const Events: React.FC<EventsProps> = ({ events, onAddEvent, onEditEvent, onDeleteEvent, onViewEvent, canAdd, canEdit, canDelete }) => {
+const Events: React.FC<EventsProps> = ({ events, onAddEvent, onImportEvent, onEditEvent, onDeleteEvent, onViewEvent, canAdd, canEdit, canDelete }) => {
   const { t } = useLanguage();
   const sortedEvents = [...events].sort((a, b) => {
     const dateA = a.date ? new Date(a.date).getTime() : 0;
@@ -41,13 +42,22 @@ const Events: React.FC<EventsProps> = ({ events, onAddEvent, onEditEvent, onDele
           {t('upcomingPastEvents')}
         </h3>
         {canAdd && (
-          <button
-            onClick={onAddEvent}
-            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-brand-100 transition-all active:scale-[0.98]"
-          >
-            <Plus className="w-5 h-5" />
-            {t('newEvent')}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={onImportEvent}
+              className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest border border-slate-100 transition-all"
+            >
+              <CalendarIcon className="w-4 h-4" />
+              {t('import') || 'Import'}
+            </button>
+            <button
+              onClick={onAddEvent}
+              className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-brand-100 transition-all active:scale-[0.98]"
+            >
+              <Plus className="w-5 h-5" />
+              {t('newEvent')}
+            </button>
+          </div>
         )}
       </div>
 

@@ -26,6 +26,7 @@ interface FinanceProps {
   onDeleteObjective: (id: string) => void;
   onViewObjective: (objective: Objective) => void;
   onAddExpense: () => void;
+  onImportExpense: () => void;
   canAdd: boolean;
   canEdit: boolean;
   canDelete: boolean;
@@ -41,6 +42,7 @@ const Finance: React.FC<FinanceProps> = ({
   onDeleteObjective,
   onViewObjective,
   onAddExpense,
+  onImportExpense,
   canAdd,
   canEdit,
   canDelete
@@ -268,13 +270,22 @@ const Finance: React.FC<FinanceProps> = ({
         <div className="flex justify-between items-center">
           <h3 className="text-2xl font-serif font-bold text-slate-900">{t('transactionHistory')}</h3>
           {canAdd && (
-            <button
-              onClick={onAddExpense}
-              className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-6 py-2.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all border border-red-100"
-            >
-              <TrendingDown className="w-4 h-4" />
-              {t('recordExpense')}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={onImportExpense}
+                className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-600 px-6 py-2.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all border border-slate-100"
+              >
+                <Tag className="w-4 h-4" />
+                {t('import') || 'Import'}
+              </button>
+              <button
+                onClick={onAddExpense}
+                className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-6 py-2.5 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all border border-red-100"
+              >
+                <TrendingDown className="w-4 h-4" />
+                {t('recordExpense')}
+              </button>
+            </div>
           )}
         </div>
 

@@ -406,6 +406,96 @@ export const useAppData = (associationId: string | null) => {
     fetchData();
   };
 
+  const bulkAddMembers = async (newMembers: Omit<Member, 'id' | 'payments' | 'associationId'>[]) => {
+    if (!associationId) return;
+    const inserts = newMembers.map(m => ({
+      id: crypto.randomUUID(),
+      association_id: associationId,
+      first_name: m.firstName,
+      last_name: m.lastName,
+      phone: m.tel,
+      city: m.city,
+      fee: m.fee,
+      joined_date: m.joinedDate,
+      gender: m.gender,
+      is_minor: m.isMinor,
+      linked_member_id: m.linkedMemberId,
+      linked_person_name: m.linkedPersonName
+    }));
+    const { error } = await insforge.database.from('members').insert(inserts);
+    if (error) throw error;
+    fetchData();
+  };
+
+  const bulkAddExpenses = async (newExpenses: Omit<Expense, 'id' | 'associationId'>[]) => {
+    if (!associationId) return;
+    const inserts = newExpenses.map(e => ({
+      id: crypto.randomUUID(),
+      association_id: associationId,
+      objective_id: e.objectiveId,
+      amount: e.amount,
+      date: e.date,
+      description: e.desc,
+      category: e.category
+    }));
+    const { error } = await insforge.database.from('expenses').insert(inserts);
+    if (error) throw error;
+    fetchData();
+  };
+
+  const bulkAddEvents = async (newEvents: Omit<Event, 'id' | 'associationId'>[]) => {
+    if (!associationId) return;
+    const inserts = newEvents.map(e => ({
+      id: crypto.randomUUID(),
+      association_id: associationId,
+      name: e.name,
+      date: e.date,
+      time: e.time,
+      location: e.place,
+      speaker: e.player,
+      description: e.description,
+      book_id: e.bookId,
+      participants: e.participants
+    }));
+    const { error } = await insforge.database.from('events').insert(inserts);
+    if (error) throw error;
+    fetchData();
+  };
+
+  const bulkAddBills = async (newBills: Omit<Bill, 'id' | 'associationId'>[]) => {
+    if (!associationId) return;
+    const inserts = newBills.map(b => ({
+      id: crypto.randomUUID(),
+      association_id: associationId,
+      title: b.title,
+      amount: b.amount,
+      date: b.date,
+      category: b.category,
+      file_url: b.fileUrl,
+      file_name: b.fileName,
+      description: b.description
+    }));
+    const { error } = await insforge.database.from('bills').insert(inserts);
+    if (error) throw error;
+    fetchData();
+  };
+
+  const bulkAddTasks = async (newTasks: Omit<Task, 'id' | 'createdAt' | 'priority' | 'associationId'>[]) => {
+    if (!associationId) return;
+    const inserts = newTasks.map((t, idx) => ({
+      id: crypto.randomUUID(),
+      association_id: associationId,
+      title: t.title,
+      description: t.description,
+      status: t.status,
+      priority: tasks.length + idx,
+      created_at: new Date().toISOString()
+    }));
+    const { error } = await insforge.database.from('tasks').insert(inserts);
+    if (error) throw error;
+    fetchData();
+  };
+
   return {
     members,
     objectives,
@@ -420,6 +510,11 @@ export const useAppData = (associationId: string | null) => {
     loading,
     logAction,
     addMember,
+    bulkAddMembers,
+    bulkAddExpenses,
+    bulkAddEvents,
+    bulkAddBills,
+    bulkAddTasks,
     updateMember,
     deleteMember,
     addPayment,

@@ -15,6 +15,7 @@ import Audit from './components/Audit';
 import Settings from './components/Settings';
 import Dashboard from './components/Dashboard';
 import { Modal, ConfirmModal, FormField, Input, Select, Textarea } from './components/Modals';
+import { ImportModal } from './components/ImportModal';
 import { useAppData } from './hooks/useAppData';
 import { Member, User, Objective, Event, Bill, Expense } from './types';
 import { formatCurrency } from './lib/utils';
@@ -64,6 +65,7 @@ function AppContent() {
     settings,
     logAction,
     addMember,
+    bulkAddMembers,
     updateMember,
     deleteMember,
     addPayment,
@@ -438,6 +440,7 @@ function AppContent() {
           canEdit={canEdit}
           canDelete={canDelete}
           onAddMember={() => { setSelectedItem(null); setModalType('member'); }}
+          onImportMember={() => { setModalType('import-member'); }}
           onEditMember={(m) => { setSelectedItem(m); setModalType('member'); }}
           onViewDetails={(m) => { setSelectedItem(m); setModalType('member-details'); }}
           onAddPayment={(m) => { setSelectedItem(m); setModalType('payment'); }}
@@ -480,6 +483,7 @@ function AppContent() {
           }}
           onViewObjective={(o) => { setSelectedItem(o); setModalType('objective-details'); }}
           onAddExpense={() => { setSelectedItem(null); setModalType('expense'); }}
+          onImportExpense={() => { setModalType('import-expense'); }}
         />
       )}
 
@@ -490,6 +494,7 @@ function AppContent() {
           canEdit={canEdit}
           canDelete={canDelete}
           onAddEvent={() => { setSelectedItem(null); setModalType('event'); }}
+          onImportEvent={() => { setModalType('import-event'); }}
           onEditEvent={(e) => { setSelectedItem(e); setModalType('event'); }}
           onViewEvent={(e) => { setSelectedItem(e); setModalType('event-details'); }}
           onDeleteEvent={(id) => {
@@ -518,6 +523,7 @@ function AppContent() {
             await addBill(b);
             logAction(user.username, 'Add Bill', `Added bill: ${b.title} (${formatCurrency(b.amount)})`);
           }}
+          onImportBill={() => { setModalType('import-bill'); }}
           onDeleteBill={(id) => {
             const bill = bills.find(b => b.id === id);
             setConfirmConfig({
@@ -555,6 +561,7 @@ function AppContent() {
           canEdit={canEdit}
           canDelete={canDelete}
           onAddTask={() => { setSelectedItem(null); setModalType('task'); }}
+          onImportTask={() => { setModalType('import-task'); }}
           onUpdateTask={(id, task) => { 
             if (Object.keys(task).length === 0) {
               setSelectedItem(tasks.find(t => t.id === id));
@@ -633,6 +640,22 @@ function AppContent() {
       />
 
       {/* Modals */}
+      <ImportModal 
+        isOpen={!!modalType && modalType.toString().startsWith('import-')}
+        type={modalType?.toString().replace('import-', '') as any}
+        onClose={() => setModalType(null)}
+        onImport={async (data) => {
+          const type = modalType?.toString().replace('import-', '');
+          if (type === 'member') await bulkAddMembers(data);
+          else if (type === 'expense') await bulkAddExpenses(data);
+          else if (type === 'event') await bulkAddEvents(data);
+          else if (type === 'bill') await bulkAddBills(data);
+          else if (type === 'task') await bulkAddTasks(data);
+          logAction(user.username, 'Bulk Import', `Imported ${data.length} ${type}s from file`);
+          setModalType(null);
+        }}
+      />
+
       <MemberModals 
         type={modalType} 
         item={selectedItem} 
@@ -1352,7 +1375,7 @@ const MemberModals = ({ type, item, onClose, onSave, objectives, members, expens
 
   return (
     <Modal 
-      isOpen={!!type} 
+      isOpen={!!type && !type.toString().startsWith('import-')} 
       onClose={onClose} 
       title={getModalTitle()}
       footer={!isViewOnly && (
