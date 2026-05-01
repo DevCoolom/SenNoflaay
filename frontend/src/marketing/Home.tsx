@@ -37,12 +37,12 @@ const Home: React.FC = () => {
               <span className="text-[10px] font-bold text-brand-700 uppercase tracking-widest">Version 2.0 Now Live</span>
             </div>
             
-            <h1 className="text-6xl md:text-8xl font-serif font-bold text-slate-900 leading-[0.95] tracking-tight mb-8">
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-slate-900 leading-[0.95] tracking-tight mb-8">
               Run your Association <br />
               <span className="text-brand-600 italic serif-display">with one platform.</span>
             </h1>
             
-            <p className="max-w-3xl mx-auto text-slate-500 text-xl md:text-2xl mb-12 leading-relaxed">
+            <p className="max-w-3xl mx-auto text-slate-500 text-lg md:text-xl mb-12 leading-relaxed">
               Manage members, accounting, events, fundraising, tasks and your member portal in one secure system. 
               Built for communities that demand excellence.
             </p>
@@ -111,11 +111,11 @@ const Home: React.FC = () => {
       </section>
 
       {/* Feature Highlights */}
-      <section className="py-16 px-6">
+      <section className="py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-24">
-            <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-6">Designed for every part of your operation.</h2>
-            <p className="text-slate-500 text-lg max-w-2xl mx-auto">From member onboarding to financial auditing, we've got you covered with specialized tools.</p>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-6">Designed for every part of your operation.</h2>
+            <p className="text-slate-500 text-base max-w-2xl mx-auto">From member onboarding to financial auditing, we've got you covered with specialized tools.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -160,11 +160,11 @@ const Home: React.FC = () => {
       </section>
 
       {/* Workflow Preview */}
-      <section className="py-16 px-6 bg-slate-900 text-white rounded-[4rem] mx-4 my-8 overflow-hidden relative">
+      <section className="py-12 px-6 bg-slate-900 text-white rounded-[4rem] mx-4 my-8 overflow-hidden relative">
         <div className="absolute top-0 right-0 w-96 h-96 bg-brand-600/10 rounded-full blur-[100px]" />
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20 relative z-10">
           <div className="flex-1">
-            <h2 className="text-4xl md:text-5xl font-serif font-bold mb-8 leading-tight">A workflow that flows with you.</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8 leading-tight">A workflow that flows with you.</h2>
             <div className="space-y-8">
               <WorkflowStep 
                 num="01" 
@@ -219,15 +219,15 @@ const Home: React.FC = () => {
       </section>
 
       {/* Security Reassurance */}
-      <section className="py-16 px-6">
+      <section className="py-12 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="bg-brand-50 rounded-[3rem] p-12 md:p-20 flex flex-col md:flex-row items-center gap-16 border border-brand-100">
             <div className="w-24 h-24 bg-white rounded-[2rem] shadow-xl shadow-brand-100 flex items-center justify-center flex-shrink-0">
               <Lock className="w-12 h-12 text-brand-600" />
             </div>
             <div>
-              <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-6">Your data, locked and protected.</h2>
-              <p className="text-slate-500 text-lg mb-8 max-w-2xl">
+              <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 mb-6">Your data, locked and protected.</h2>
+              <p className="text-slate-500 text-base mb-8 max-w-2xl">
                 We use AES-256 encryption, regular security audits, and multi-factor authentication 
                 to ensure your association's data is always safe and private.
               </p>
@@ -251,9 +251,9 @@ const Home: React.FC = () => {
       </section>
 
       {/* Pricing Teaser */}
-      <section className="py-16 px-6 bg-white">
+      <section className="py-12 px-6 bg-white">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mb-16">Simple plans for every size.</h2>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-16">Simple plans for every size.</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
             <PricingTeaserCard title="Starter" price="$0" feat="Up to 50 members" />
             <PricingTeaserCard title="Pro" price="$29" feat="Unlimited members" popular />
@@ -264,7 +264,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-16 px-6">
+      <section className="py-12 px-6">
         <div className="max-w-5xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -273,8 +273,8 @@ const Home: React.FC = () => {
             className="bg-brand-600 rounded-[4rem] p-16 md:p-24 shadow-2xl shadow-brand-100 text-white relative overflow-hidden"
           >
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-brand-500 to-brand-700 -z-10" />
-            <h2 className="text-4xl md:text-6xl font-serif font-bold mb-8">Ready to transform your association?</h2>
-            <p className="text-brand-100 text-xl mb-12 max-w-2xl mx-auto">Join hundreds of successful clubs managing their community with SenNoflaay.</p>
+            <h2 className="text-3xl md:text-5xl font-serif font-bold mb-8">Ready to transform your association?</h2>
+            <p className="text-brand-100 text-lg mb-12 max-w-2xl mx-auto">Join hundreds of successful clubs managing their community with SenNoflaay.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/demo" className="w-full sm:w-auto bg-white text-brand-600 px-10 py-5 rounded-2xl font-bold text-sm uppercase tracking-widest transition-all hover:bg-brand-50 shadow-xl active:scale-95">
                 Get Started Free
@@ -302,8 +302,8 @@ const FeatureCard = ({ icon, title, description, delay }: any) => (
         {icon}
       </div>
     </div>
-    <h3 className="text-2xl font-serif font-bold text-slate-900 mb-4">{title}</h3>
-    <p className="text-slate-500 leading-relaxed">{description}</p>
+    <h3 className="text-xl font-serif font-bold text-slate-900 mb-4">{title}</h3>
+    <p className="text-slate-500 text-sm leading-relaxed">{description}</p>
   </motion.div>
 );
 

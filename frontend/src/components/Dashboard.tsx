@@ -134,11 +134,11 @@ const Dashboard: React.FC<DashboardProps> = ({
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-serif font-bold text-slate-900">{t('dashboard')}</h2>
+          <h2 className="text-2xl font-serif font-bold text-slate-900">{t('dashboard')}</h2>
           <div className="bg-brand-50 border border-brand-100 px-4 py-2 rounded-2xl flex items-center gap-2">
             <span className="text-[10px] font-bold text-brand-600 uppercase tracking-widest">Association ID:</span>
             <code className="text-sm font-mono font-bold text-brand-900 bg-white px-2 py-0.5 rounded border border-brand-100">{associationId || 'N/A'}</code>
@@ -162,7 +162,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               <stat.icon className="w-6 h-6" />
             </div>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-            <p className="text-2xl font-serif font-bold text-slate-900">{stat.value}</p>
+            <p className="text-xl font-serif font-bold text-slate-900">{stat.value}</p>
             <div className="mt-4 flex items-center gap-1.5">
               <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", stat.trendColor)}>
                 {stat.trend}
@@ -172,13 +172,13 @@ const Dashboard: React.FC<DashboardProps> = ({
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Overview Column */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6">
           {/* Objectives Progress */}
           <section className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-serif font-bold text-slate-900">{t('progressTowardsObjectives')}</h3>
+              <h3 className="text-lg font-serif font-bold text-slate-900">{t('progressTowardsObjectives')}</h3>
               <button 
                 onClick={() => setActiveTab('finance')}
                 className="text-xs font-bold text-brand-600 uppercase tracking-widest hover:underline"
@@ -218,7 +218,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           </section>
 
           {/* Upcoming Events & Tasks */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <section className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
@@ -274,7 +274,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Sidebar Column */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Quick Actions */}
           <section className="bg-brand-900 p-8 rounded-[3rem] text-white shadow-xl shadow-brand-100">
             <h3 className="text-lg font-serif font-bold mb-6">Quick Actions</h3>

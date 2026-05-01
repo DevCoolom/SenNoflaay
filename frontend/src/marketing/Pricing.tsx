@@ -62,14 +62,14 @@ const Pricing: React.FC = () => {
 
   return (
     <MarketingLayout>
-      <section className="pt-48 pb-32 px-6">
+      <section className="pt-32 pb-20 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-24">
-            <h1 className="text-5xl md:text-7xl font-serif font-bold text-slate-900 mb-8 leading-tight">
+          <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-6xl font-serif font-bold text-slate-900 mb-8 leading-tight">
               Simple, transparent <br />
               <span className="text-brand-600 italic serif-display">pricing for all.</span>
             </h1>
-            <p className="text-slate-500 text-xl max-w-2xl mx-auto leading-relaxed">
+            <p className="text-slate-500 text-lg max-w-2xl mx-auto leading-relaxed">
               No hidden fees. No complicated contracts. Just the tools you 
               need to grow your community.
             </p>
@@ -95,8 +95,8 @@ const Pricing: React.FC = () => {
                 )}
                 
                 <div className="mb-10">
-                  <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2">{tier.name}</h3>
-                  <p className="text-slate-400 text-sm">{tier.desc}</p>
+                  <h3 className="text-xl font-serif font-bold text-slate-900 mb-2">{tier.name}</h3>
+                  <p className="text-slate-400 text-xs">{tier.desc}</p>
                 </div>
 
                 <div className="mb-10 flex items-baseline gap-1">
@@ -138,7 +138,7 @@ const Pricing: React.FC = () => {
           </div>
 
           {/* Pricing FAQ teaser */}
-          <div className="mt-32 text-center">
+          <div className="mt-20 text-center">
             <h3 className="text-2xl font-serif font-bold text-slate-900 mb-8">Frequently asked questions</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-left max-w-4xl mx-auto">
               <div>

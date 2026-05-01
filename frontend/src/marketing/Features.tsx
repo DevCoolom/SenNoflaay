@@ -87,18 +87,18 @@ const Features: React.FC = () => {
   return (
     <MarketingLayout>
       {/* Header */}
-      <section className="pt-48 pb-24 px-6 bg-white">
+      <section className="pt-32 pb-20 px-6 bg-white">
         <div className="max-w-5xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-7xl font-serif font-bold text-slate-900 mb-8 leading-tight">
+            <h1 className="text-3xl md:text-5xl font-serif font-bold text-slate-900 mb-8 leading-tight">
               Powerful tools for <br />
               <span className="text-brand-600 italic serif-display">modern associations.</span>
             </h1>
-            <p className="text-slate-500 text-xl md:text-2xl leading-relaxed">
+            <p className="text-slate-500 text-base md:text-lg leading-relaxed">
               Every feature is built with the unique needs of clubs, non-profits, 
               and professional organizations in mind.
             </p>
@@ -108,14 +108,14 @@ const Features: React.FC = () => {
 
       {/* Feature Sections */}
       {features.map((feature, index) => (
-        <section key={feature.id} className={`py-16 px-6 ${index % 2 === 0 ? 'bg-slate-50/50' : 'bg-white'}`}>
+        <section key={feature.id} className={`py-12 px-6 ${index % 2 === 0 ? 'bg-slate-50/50' : 'bg-white'}`}>
           <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-20">
             <div className={`flex-1 ${index % 2 !== 0 ? 'lg:order-2' : ''}`}>
               <div className="w-20 h-20 bg-brand-600 rounded-[2rem] flex items-center justify-center text-white mb-10 shadow-xl shadow-brand-100">
                 {feature.icon}
               </div>
-              <h2 className="text-4xl font-serif font-bold text-slate-900 mb-8">{feature.title}</h2>
-              <p className="text-slate-500 text-lg mb-10 leading-relaxed">{feature.description}</p>
+              <h2 className="text-3xl font-serif font-bold text-slate-900 mb-8">{feature.title}</h2>
+              <p className="text-slate-500 text-base mb-10 leading-relaxed">{feature.description}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
                 {feature.points.map((point, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -147,10 +147,10 @@ const Features: React.FC = () => {
       ))}
 
       {/* Grid Features (Additional ones) */}
-      <section className="py-16 px-6">
+      <section className="py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-24">
-            <h2 className="text-4xl font-serif font-bold text-slate-900 mb-6">And so much more.</h2>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-serif font-bold text-slate-900 mb-6">And so much more.</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             <SmallFeatureCard 
@@ -178,7 +178,7 @@ const Features: React.FC = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-16 px-6 bg-brand-600">
+      <section className="py-12 px-6 bg-brand-600">
         <div className="max-w-4xl mx-auto text-center text-white">
           <h2 className="text-4xl md:text-5xl font-serif font-bold mb-10">See these tools in action.</h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">

@@ -24,6 +24,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useLanguage } from '../lib/LanguageContext';
 import { Language } from '../lib/translations';
+import Logo from './Logo';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -70,11 +71,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-100 sticky top-0 h-screen z-40">
         <div className="p-8 flex flex-col gap-4">
           {settings?.logo_url ? (
-            <img src={settings.logo_url} alt="Logo" className="h-16 w-auto object-contain self-start" />
-          ) : null}
-          <h1 className="text-xl font-serif font-bold text-slate-900 tracking-tight leading-tight">
-            {settings?.app_name || t('appTitle')}
-          </h1>
+            <img src={settings.logo_url} alt="Logo" className="h-20 w-auto object-contain self-start" />
+          ) : (
+            <Logo className="h-24" textColor="#0f172a" />
+          )}
         </div>
 
         <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto custom-scrollbar">
@@ -164,11 +164,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
         <div className="px-6 h-20 flex justify-between items-center">
           <div className="flex items-center gap-3">
             {settings?.logo_url ? (
-              <img src={settings.logo_url} alt="Logo" className="h-10 w-auto object-contain" />
-            ) : null}
-            <h1 className="text-lg font-serif font-bold text-slate-900 tracking-tight">
-              {settings?.app_name || t('appTitle')}
-            </h1>
+              <img src={settings.logo_url} alt="Logo" className="h-14 w-auto object-contain" />
+            ) : (
+              <Logo className="h-16" textColor="#0f172a" />
+            )}
           </div>
 
           <button 
@@ -228,7 +227,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 10 }}
@@ -240,7 +239,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
         </main>
 
         {/* Footer */}
-        <footer className="bg-white/50 border-t border-slate-100 py-8">
+        <footer className="bg-white/50 border-t border-slate-100 py-6">
           <div className="max-w-6xl mx-auto px-4 text-center">
             <p className="text-xs font-medium text-slate-400 uppercase tracking-widest">
               &copy; {new Date().getFullYear()} {settings?.app_name || 'SenNoflaay'}

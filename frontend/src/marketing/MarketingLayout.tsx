@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Shield, Globe, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import Logo from '../components/Logo';
 
 interface MarketingLayoutProps {
   children: React.ReactNode;
@@ -39,7 +40,7 @@ const MarketingLayout: React.FC<MarketingLayoutProps> = ({ children }) => {
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <span className="text-2xl font-bold tracking-tight text-slate-900 font-serif">SenNoflaay</span>
+            <Logo className="h-16" textColor="#0f172a" />
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
@@ -119,7 +120,7 @@ const MarketingLayout: React.FC<MarketingLayoutProps> = ({ children }) => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-3 mb-8">
-                <span className="text-3xl font-serif font-bold tracking-tight">SenNoflaay</span>
+                <Logo className="h-24" textColor="#ffffff" />
               </div>
               <p className="text-slate-400 max-w-sm text-lg leading-relaxed mb-8">
                 The all-in-one platform for modern association management. 
