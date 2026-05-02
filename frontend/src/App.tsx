@@ -219,27 +219,27 @@ function AppContent() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="bg-white p-12 rounded-[3rem] card-shadow w-full max-w-lg border border-slate-100 transition-all relative overflow-hidden"
+        className="bg-white p-8 rounded-[2rem] card-shadow w-full max-w-sm border border-slate-100 transition-all relative overflow-hidden"
       >
         {/* Decorative background element */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50/50 rounded-full -mr-16 -mt-16 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-50/50 rounded-full -ml-16 -mb-16 blur-3xl" />
 
-        <div className="flex flex-col items-center mb-12 relative z-10">
-          <div className="bg-brand-600 p-6 rounded-[2rem] mb-6 shadow-2xl shadow-brand-100">
-            <Shield className="w-12 h-12 text-white" />
+        <div className="flex flex-col items-center mb-6 relative z-10">
+          <div className="bg-brand-600 p-3 rounded-xl mb-3 shadow-xl shadow-brand-100">
+            <Shield className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-3xl font-serif font-bold text-slate-900 text-center leading-tight">
+          <h2 className="text-2xl font-serif font-bold text-slate-900 text-center leading-tight">
             {isRegistering ? 'Register Association' : (settings.app_name || 'Association Management')}
           </h2>
-          <div className="h-1 w-12 bg-brand-600 rounded-full mt-4 mb-2" />
+          <div className="h-1 w-10 bg-brand-600 rounded-full mt-2 mb-1.5" />
           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
             {isRegistering ? 'Create your platform account' : 'Sign in to your association'}
           </p>
         </div>
 
         {!isRegistering ? (
-          <form onSubmit={handleLogin} className="space-y-6 relative z-10">
+          <form onSubmit={handleLogin} className="space-y-3 relative z-10">
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Association ID</label>
               <div className="relative group">
@@ -247,7 +247,7 @@ function AppContent() {
                 <input
                   type="text"
                   required
-                  className="w-full pl-12 pr-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
                   placeholder="e.g. my-assoc"
                   value={loginData.associationId}
                   onChange={e => setLoginData(prev => ({ ...prev, associationId: e.target.value }))}
@@ -262,7 +262,7 @@ function AppContent() {
                 <input
                   type="text"
                   required
-                  className="w-full pl-12 pr-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
                   placeholder={t('username')}
                   value={loginData.username}
                   onChange={e => setLoginData(prev => ({ ...prev, username: e.target.value }))}
@@ -277,7 +277,7 @@ function AppContent() {
                 <input
                   type="password"
                   required
-                  className="w-full pl-12 pr-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
                   placeholder={t('password')}
                   value={loginData.password}
                   onChange={e => setLoginData(prev => ({ ...prev, password: e.target.value }))}
@@ -297,7 +297,7 @@ function AppContent() {
 
             <button
               type="submit"
-              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-5 rounded-2xl transition-all shadow-xl shadow-brand-100 active:scale-[0.98] text-xs uppercase tracking-[0.2em] mt-4"
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl transition-all shadow-xl shadow-brand-100 active:scale-[0.98] text-xs uppercase tracking-[0.2em] mt-1"
             >
               {t('signIn')}
             </button>
@@ -390,8 +390,8 @@ function AppContent() {
           </form>
         )}
 
-        <div className="mt-12 pt-8 border-t border-slate-50 text-center relative z-10">
-          <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest leading-relaxed">
+        <div className="mt-6 pt-4 border-t border-slate-50 text-center relative z-10">
+          <p className="text-[9px] text-slate-300 font-bold uppercase tracking-widest leading-relaxed">
             Authorized access only.<br />Contact administrator for support.
           </p>
         </div>
