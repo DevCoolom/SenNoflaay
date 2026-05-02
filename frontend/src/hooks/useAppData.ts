@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Member, Objective, Expense, Event, Correction, Bill, User, AuditLog, Payment, Task, MembershipFeeConfig } from '../types';
+import { AppNotification } from '../types';
+import { Member, Objective, Expense, Event, Correction, Bill, User, AuditLog, Payment, Task, MembershipFeeConfig, Campaign, Donation } from '../types';
 import { insforge } from '../lib/insforge';
 import { hashPassword } from '../lib/crypto';
 
@@ -14,6 +15,9 @@ export const useAppData = (associationId: string | null) => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [donations, setDonations] = useState<Donation[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [membershipFeeConfig, setMembershipFeeConfig] = useState<MembershipFeeConfig | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +37,10 @@ export const useAppData = (associationId: string | null) => {
         { data: auditLogsData },
         { data: settingsData },
         { data: tasksData },
-        { data: feeConfigData }
+        { data: feeConfigData },
+        { data: campaignsData },
+        { data: donationsData },
+        { data: notificationsData }
       ] = await Promise.all([
         insforge.database.from('members').select('*, payments(*)').eq('association_id', associationId),
         insforge.database.from('objectives').select('*').eq('association_id', associationId),
@@ -45,7 +52,10 @@ export const useAppData = (associationId: string | null) => {
         insforge.database.from('audit_logs').select('*').eq('association_id', associationId).order('timestamp', { ascending: false }),
         insforge.database.from('settings').select('*').eq('association_id', associationId),
         insforge.database.from('tasks').select('*').eq('association_id', associationId).order('priority', { ascending: true }),
-        insforge.database.from('membership_fee_configs').select('*').eq('association_id', associationId).maybeSingle()
+        insforge.database.from('membership_fee_configs').select('*').eq('association_id', associationId).maybeSingle(),
+        insforge.database.from('campaigns').select('*').eq('association_id', associationId),
+        insforge.database.from('donations').select('*').eq('association_id', associationId),
+        insforge.database.from('notifications').select('*').eq('association_id', associationId).order('created_at', { ascending: false })
       ]);
 
       // Map data to camelCase as expected by the frontend
@@ -75,10 +85,42 @@ export const useAppData = (associationId: string | null) => {
       setEvents(eventsData?.map((ev: any) => ({ ...ev, associationId: ev.association_id, bookId: ev.book_id, player: ev.speaker, place: ev.location })) || []);
       setBills(billsData?.map((b: any) => ({ ...b, associationId: b.association_id, fileUrl: b.file_url, fileName: b.file_name })) || []);
       setCorrections(correctionsData?.map((c: any) => ({ ...c, associationId: c.association_id })) || []);
-      setUsers(usersData?.map((u: any) => ({ ...u, associationId: u.association_id })) || []);
+      setUsers(usersData?.map((u: any) => ({ ...u, associationId: u.association_id, memberId: u.member_id })) || []);
       setAuditLogs(auditLogsData?.map((l: any) => ({ ...l, associationId: l.association_id, user: l.user_name })) || []);
       setSettings(settingsData?.reduce((acc: any, s: any) => ({ ...acc, [s.key]: s.value }), {}) || {});
       setTasks(tasksData?.map((t: any) => ({ ...t, associationId: t.association_id, createdAt: t.created_at })) || []);
+      
+      setCampaigns(campaignsData?.map((c: any) => ({
+        ...c,
+        associationId: c.association_id,
+        goalAmount: c.goal_amount,
+        currentAmount: c.current_amount,
+        startDate: c.start_date,
+        endDate: c.end_date,
+        createdAt: c.created_at
+      })) || []);
+
+      setDonations(donationsData?.map((d: any) => ({
+        ...d,
+        associationId: d.association_id,
+        campaignId: d.campaign_id,
+        donorName: d.donor_name,
+        donorEmail: d.donor_email,
+        isAnonymous: d.is_anonymous
+      })) || []);
+
+      setNotifications(notificationsData?.map((n: any) => ({
+        id: n.id,
+        associationId: n.association_id,
+        title: n.title,
+        message: n.message,
+        type: n.type,
+        isRead: n.is_read,
+        targetRole: n.target_role,
+        targetUserId: n.target_user_id,
+        link: n.link,
+        createdAt: n.created_at
+      })) || []);
       
       setMembershipFeeConfig(feeConfigData ? {
         associationId: feeConfigData.association_id,
@@ -153,6 +195,18 @@ export const useAppData = (associationId: string | null) => {
       is_minor: member.isMinor,
       linked_member_id: member.linkedMemberId,
       linked_person_name: member.linkedPersonName
+    }).eq('id', id).eq('association_id', associationId);
+    if (error) throw error;
+    fetchData();
+  };
+
+  const updateMemberProfile = async (id: string, member: Partial<Member>) => {
+    if (!associationId) return;
+    const { error } = await insforge.database.from('members').update({
+      first_name: member.firstName,
+      last_name: member.lastName,
+      phone: member.tel,
+      city: member.city
     }).eq('id', id).eq('association_id', associationId);
     if (error) throw error;
     fetchData();
@@ -312,7 +366,8 @@ export const useAppData = (associationId: string | null) => {
       username: user.username,
       association_id: associationId,
       password: hashedPw,
-      role: user.role
+      role: user.role,
+      member_id: user.memberId || null
     });
     if (error) throw error;
     fetchData();
@@ -320,7 +375,7 @@ export const useAppData = (associationId: string | null) => {
 
   const updateUser = async (username: string, user: Partial<User>) => {
     if (!associationId) return;
-    const updateData: any = { role: user.role };
+    const updateData: any = { role: user.role, member_id: user.memberId || null };
     if (user.password) {
       updateData.password = await hashPassword(user.password);
     }
@@ -515,6 +570,105 @@ export const useAppData = (associationId: string | null) => {
     }
   };
 
+  const addCampaign = async (campaign: Omit<Campaign, 'id' | 'associationId' | 'createdAt' | 'currentAmount'>) => {
+    if (!associationId) return;
+    const id = crypto.randomUUID();
+    const { error } = await insforge.database.from('campaigns').insert({
+      id,
+      association_id: associationId,
+      title: campaign.title,
+      description: campaign.description,
+      goal_amount: campaign.goalAmount,
+      current_amount: 0,
+      start_date: campaign.startDate,
+      end_date: campaign.endDate,
+      status: campaign.status,
+      image_url: campaign.imageUrl
+    });
+    if (error) throw error;
+    fetchData();
+  };
+
+  const updateCampaign = async (id: string, campaign: Partial<Campaign>) => {
+    if (!associationId) return;
+    const { error } = await insforge.database.from('campaigns').update({
+      title: campaign.title,
+      description: campaign.description,
+      goal_amount: campaign.goalAmount,
+      start_date: campaign.startDate,
+      end_date: campaign.endDate,
+      status: campaign.status,
+      image_url: campaign.imageUrl
+    }).eq('id', id).eq('association_id', associationId);
+    if (error) throw error;
+    fetchData();
+  };
+
+  const deleteCampaign = async (id: string) => {
+    if (!associationId) return;
+    const { error } = await insforge.database.from('campaigns').delete().eq('id', id).eq('association_id', associationId);
+    if (error) throw error;
+    fetchData();
+  };
+
+  const addDonation = async (donation: Omit<Donation, 'id' | 'associationId' | 'date'>) => {
+    if (!associationId) return;
+    const id = crypto.randomUUID();
+    const date = new Date().toISOString();
+    
+    // Insert donation
+    const { error } = await insforge.database.from('donations').insert({
+      id,
+      association_id: associationId,
+      campaign_id: donation.campaignId,
+      amount: donation.amount,
+      donor_name: donation.donorName,
+      donor_email: donation.donorEmail,
+      message: donation.message,
+      is_anonymous: donation.isAnonymous,
+      date
+    });
+    if (error) throw error;
+
+    // Fetch current campaign to update current_amount
+    const { data: cData } = await insforge.database.from('campaigns').select('current_amount').eq('id', donation.campaignId).single();
+    if (cData) {
+      await insforge.database.from('campaigns').update({
+        current_amount: (cData.current_amount || 0) + donation.amount
+      }).eq('id', donation.campaignId);
+    }
+    
+    fetchData();
+  };
+
+  const markNotificationRead = async (id: string) => {
+    if (!associationId) return;
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    await insforge.database.from('notifications').update({ is_read: true }).eq('id', id).eq('association_id', associationId);
+  };
+
+  const addNotification = async (notification: Omit<AppNotification, 'id' | 'associationId' | 'createdAt' | 'isRead'>) => {
+    if (!associationId) return;
+    const id = crypto.randomUUID();
+    const createdAt = new Date().toISOString();
+    
+    const { error } = await insforge.database.from('notifications').insert({
+      id,
+      association_id: associationId,
+      title: notification.title,
+      message: notification.message,
+      type: notification.type,
+      is_read: false,
+      target_role: notification.targetRole,
+      target_user_id: notification.targetUserId,
+      link: notification.link,
+      created_at: createdAt
+    });
+    if (!error) {
+      fetchData();
+    }
+  };
+
   return {
     members,
     objectives,
@@ -535,6 +689,7 @@ export const useAppData = (associationId: string | null) => {
     bulkAddBills,
     bulkAddTasks,
     updateMember,
+    updateMemberProfile,
     deleteMember,
     addPayment,
     addObjective,
@@ -556,7 +711,16 @@ export const useAppData = (associationId: string | null) => {
     deleteTask,
     reorderTasks,
     membershipFeeConfig,
-    uploadFile
+    uploadFile,
+    campaigns,
+    donations,
+    notifications,
+    addCampaign,
+    updateCampaign,
+    deleteCampaign,
+    addDonation,
+    markNotificationRead,
+    addNotification
   };
 };
 

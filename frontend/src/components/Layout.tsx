@@ -16,6 +16,7 @@ import {
   History,
   Sun,
   BookOpen,
+  Heart,
   TrendingUp,
   CheckCircle2,
   Github
@@ -25,6 +26,8 @@ import { cn } from '../lib/utils';
 import { useLanguage } from '../lib/LanguageContext';
 import { Language } from '../lib/translations';
 import Logo from './Logo';
+import NotificationBell from './NotificationBell';
+import { AppNotification } from '../types';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -33,28 +36,42 @@ interface LayoutProps {
   user: { username: string; role: string } | null;
   onLogout: () => void;
   settings?: Record<string, string>;
+  notifications?: AppNotification[];
+  onMarkNotificationRead?: (id: string) => void;
+  onNavigate?: (link: string) => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user, onLogout, settings }) => {
+const Layout: React.FC<LayoutProps> = ({ 
+  children, 
+  activeTab, 
+  setActiveTab, 
+  user, 
+  onLogout, 
+  settings,
+  notifications = [],
+  onMarkNotificationRead = () => {},
+  onNavigate
+}) => {
   const { t, language, setLanguage } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
 
   const tabs = [
-    { id: 'dashboard', label: t('dashboard'), icon: BarChart3 },
-    { id: 'members', label: t('members'), icon: Users },
-    { id: 'finance', label: t('finance'), icon: Wallet },
-    { id: 'events', label: t('events'), icon: Calendar },
-    { id: 'bills', label: t('bills'), icon: Receipt },
-    { id: 'reports', label: t('reports'), icon: BarChart3 },
-    { id: 'tasks', label: t('tasks'), icon: CheckCircle2 },
+    { id: 'dashboard', label: t('dashboard') || 'Dashboard', icon: BarChart3 },
+    { id: 'members', label: t('members') || 'Members', icon: Users },
+    { id: 'finance', label: t('finance') || 'Finance', icon: Wallet },
+    { id: 'fundraising', label: t('fundraising') || 'Fundraising', icon: Heart },
+    { id: 'events', label: t('events') || 'Events', icon: Calendar },
+    { id: 'bills', label: t('bills') || 'Bills', icon: Receipt },
+    { id: 'reports', label: t('reports') || 'Reports', icon: BarChart3 },
+    { id: 'tasks', label: t('tasks') || 'Tasks', icon: CheckCircle2 },
   ];
 
   if (user?.role === 'superadmin' || user?.role === 'admin' || user?.role === 'treasury') {
-    tabs.push({ id: 'users', label: t('users'), icon: Settings });
+    tabs.push({ id: 'users', label: t('users') || 'Users', icon: Settings });
   }
   if (user?.role === 'superadmin') {
-    tabs.push({ id: 'audit', label: t('audit'), icon: History });
+    tabs.push({ id: 'audit', label: t('audit') || 'Audit', icon: History });
   }
 
   const languages: { code: Language; label: string }[] = [
@@ -138,6 +155,14 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
                 )}
               </AnimatePresence>
             </div>
+            
+            <div className="relative">
+              <NotificationBell 
+                notifications={notifications}
+                onMarkRead={onMarkNotificationRead}
+                onNavigate={onNavigate}
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-brand-50/30 rounded-2xl border border-brand-100/50">
@@ -170,12 +195,19 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, user
             )}
           </div>
 
-          <button 
-            className="p-2 text-slate-400 hover:text-brand-600 transition-colors"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <NotificationBell 
+              notifications={notifications}
+              onMarkRead={onMarkNotificationRead}
+              onNavigate={onNavigate}
+            />
+            <button 
+              className="p-2 text-slate-400 hover:text-brand-600 transition-colors"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Nav */}

@@ -24,6 +24,10 @@ import { LanguageProvider, useLanguage } from './lib/LanguageContext';
 import { hashPassword } from './lib/crypto';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
+import MemberPortal from './components/MemberPortal';
+import Fundraising from './components/Fundraising';
+import DonationPage from './components/DonationPage';
+import { useNotificationGenerator } from './hooks/useNotificationGenerator';
 
 // Marketing Pages
 import Home from './marketing/Home';
@@ -69,15 +73,19 @@ function AppContent() {
     addMember,
     bulkAddMembers,
     updateMember,
+    updateMemberProfile,
     deleteMember,
     addPayment,
     addObjective,
     deleteObjective,
     addExpense,
+    bulkAddExpenses,
     addEvent,
+    bulkAddEvents,
     updateEvent,
     deleteEvent,
     addBill,
+    bulkAddBills,
     deleteBill,
     upsertCorrection,
     addUser,
@@ -91,8 +99,28 @@ function AppContent() {
     updateTask,
     deleteTask,
     reorderTasks,
-    loading
+    bulkAddTasks,
+    loading,
+    uploadFile,
+    campaigns,
+    donations,
+    notifications,
+    addCampaign,
+    updateCampaign,
+    deleteCampaign,
+    addDonation,
+    markNotificationRead,
+    addNotification
   } = useAppData(user?.associationId || null);
+
+  useNotificationGenerator(
+    user?.associationId || null,
+    events,
+    tasks,
+    members,
+    notifications,
+    addNotification
+  );
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loginData, setLoginData] = useState({ associationId: '', username: '', password: '' });
@@ -159,7 +187,8 @@ function AppContent() {
         const userData = {
           username: data.username,
           role: data.role,
-          associationId: data.association_id
+          associationId: data.association_id,
+          memberId: data.member_id
         };
         setUser(userData);
         sessionStorage.setItem('pkst_user', JSON.stringify(userData));
@@ -437,17 +466,49 @@ function AppContent() {
   const canEdit = isSuperAdmin || isAdmin;
   const canDelete = isSuperAdmin || isAdmin;
 
-  const authenticatedView = user && (
-    <Layout 
-      activeTab={activeTab} 
-      setActiveTab={setActiveTab} 
-      user={user} 
-      onLogout={handleLogout}
-      settings={settings}
-    >
-      {activeTab === 'dashboard' && (
-        <Dashboard 
-          members={members}
+  const currentMember = user?.memberId ? members.find(m => m.id === user.memberId) : null;
+
+  const userNotifications = notifications.filter(n => 
+    n.targetRole === 'all' || 
+    n.targetRole === user?.role || 
+    (user?.memberId && n.targetUserId === user.memberId)
+  );
+
+  const authenticatedView = user ? (
+    user.role === 'member' ? (
+      <MemberPortal 
+        user={user}
+        member={currentMember || null}
+        members={members}
+        events={events}
+        objectives={objectives}
+        onUpdateProfile={async (data) => {
+          if (currentMember) {
+            await updateMemberProfile(currentMember.id, data);
+            logAction(user.username, 'Update Profile', `Updated member profile via portal`);
+          }
+        }}
+        onLogout={handleLogout}
+      />
+    ) : (
+      <Layout 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        user={user} 
+        onLogout={handleLogout}
+        settings={settings}
+        notifications={userNotifications}
+        onMarkNotificationRead={markNotificationRead}
+        onNavigate={(link) => {
+          // Parse link and navigate
+          // For simplicity we use activeTab and setSelectedItem if possible
+          // Currently just sets the active tab
+          setActiveTab(link);
+        }}
+      >
+        {activeTab === 'dashboard' && (
+          <Dashboard 
+            members={members}
           objectives={objectives}
           expenses={expenses}
           events={events}
@@ -560,6 +621,28 @@ function AppContent() {
               onConfirm: async () => {
                 await deleteBill(id);
                 logAction(user.username, 'Delete Bill', `Deleted bill: ${bill?.title || id}`);
+              }
+            });
+          }}
+        />
+      )}
+
+      {activeTab === 'fundraising' && (
+        <Fundraising
+          campaigns={campaigns}
+          donations={donations}
+          associationId={user?.associationId || null}
+          onAddCampaign={() => { setSelectedItem(null); setModalType('campaign'); }}
+          onEditCampaign={(c) => { setSelectedItem(c); setModalType('campaign'); }}
+          onDeleteCampaign={(id) => {
+            const campaign = campaigns.find(c => c.id === id);
+            setConfirmConfig({
+              isOpen: true,
+              title: t('confirmDeleteTitle'),
+              message: `${t('confirmDeleteMessage')} (${campaign?.title})`,
+              onConfirm: async () => {
+                await deleteCampaign(id);
+                logAction(user.username, 'Delete Campaign', `Deleted campaign: ${campaign?.title || id}`);
               }
             });
           }}
@@ -737,6 +820,14 @@ function AppContent() {
               await addTask(data);
               logAction(user.username, 'Add Task', `Added task: ${data.title}`);
             }
+          } else if (modalType === 'campaign') {
+            if (selectedItem) {
+              await updateCampaign(selectedItem.id, data);
+              logAction(user.username, 'Edit Campaign', `Edited campaign: ${data.title}`);
+            } else {
+              await addCampaign(data);
+              logAction(user.username, 'Add Campaign', `Added campaign: ${data.title}`);
+            }
           }
           setModalType(null);
         }}
@@ -744,8 +835,8 @@ function AppContent() {
         members={members}
         expenses={expenses}
       />
-    </Layout>
-  );
+    )
+  ) : null;
 
   return (
     <Routes>
@@ -758,7 +849,14 @@ function AppContent() {
       <Route path="/support" element={<Support />} />
       
       <Route path="/login" element={user ? <Navigate to="/app" /> : loginView} />
-      <Route path="/app" element={!user ? <Navigate to="/login" /> : authenticatedView} />
+      <Route path="/donate/:associationId" element={<DonationPage />} />
+      <Route path="/app" element={
+        user ? (
+          authenticatedView
+        ) : (
+          <Navigate to="/login" replace />
+        )
+      } />
       
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
@@ -856,6 +954,15 @@ const MemberModals = ({ type, item, onClose, onSave, objectives, members, expens
       setFormData({
         title: '',
         status: 'todo',
+        description: ''
+      });
+    } else if (type === 'campaign' && !item) {
+      setFormData({
+        title: '',
+        goalAmount: '',
+        status: 'active',
+        startDate: new Date().toISOString().split('T')[0],
+        endDate: '',
         description: ''
       });
     } else if (type === 'user' && !item) {
@@ -1239,6 +1346,60 @@ const MemberModals = ({ type, item, onClose, onSave, objectives, members, expens
             </FormField>
           </div>
         );
+      case 'campaign':
+        return (
+          <div className="space-y-4">
+            <FormField label="Campaign Title" required>
+              <Input 
+                value={formData.title || ''} 
+                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Campaign Title"
+              />
+            </FormField>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField label="Goal Amount" required>
+                <Input 
+                  type="number"
+                  value={isNaN(formData.goalAmount) ? '' : (formData.goalAmount ?? '')} 
+                  onChange={e => setFormData({ ...formData, goalAmount: e.target.value === '' ? '' : parseFloat(e.target.value) })}
+                />
+              </FormField>
+              <FormField label="Status" required>
+                <Select 
+                  value={formData.status || 'active'}
+                  onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                >
+                  <option value="active">Active</option>
+                  <option value="completed">Completed</option>
+                  <option value="paused">Paused</option>
+                </Select>
+              </FormField>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <FormField label="Start Date">
+                <Input 
+                  type="date"
+                  value={formData.startDate || ''} 
+                  onChange={e => setFormData({ ...formData, startDate: e.target.value })}
+                />
+              </FormField>
+              <FormField label="End Date">
+                <Input 
+                  type="date"
+                  value={formData.endDate || ''} 
+                  onChange={e => setFormData({ ...formData, endDate: e.target.value })}
+                />
+              </FormField>
+            </div>
+            <FormField label="Description" required>
+              <Textarea 
+                value={formData.description || ''} 
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Detailed description of the campaign"
+              />
+            </FormField>
+          </div>
+        );
       case 'user':
         return (
           <div className="space-y-4">
@@ -1259,8 +1420,22 @@ const MemberModals = ({ type, item, onClose, onSave, objectives, members, expens
                 <option value="admin">{t('admin')}</option>
                 <option value="treasury">{t('treasury')}</option>
                 <option value="controller">{t('controller')}</option>
+                <option value="member">Member Portal Access</option>
               </Select>
             </FormField>
+            {formData.role === 'member' && (
+              <FormField label="Link Member Profile">
+                <Select 
+                  value={formData.memberId || ''}
+                  onChange={e => setFormData({ ...formData, memberId: e.target.value })}
+                >
+                  <option value="">No linked profile</option>
+                  {members.map((m: any) => (
+                    <option key={m.id} value={m.id}>{m.firstName} {m.lastName}</option>
+                  ))}
+                </Select>
+              </FormField>
+            )}
             <FormField label={t('password')} required={!item}>
               <Input 
                 type="password"
@@ -1437,6 +1612,7 @@ const MemberModals = ({ type, item, onClose, onSave, objectives, members, expens
       case 'objective': return t('newObjective');
       case 'expense': return t('recordExpense');
       case 'event': return item ? t('editEvent') : t('newEvent');
+      case 'campaign': return item ? 'Edit Campaign' : 'New Campaign';
       case 'task': return item ? t('editTask') : t('newTask');
       case 'user': return item ? t('editUser') : t('newUser');
       case 'correction': return t('yearlyFinancialReport');
