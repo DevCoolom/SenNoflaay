@@ -95,21 +95,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Trust Strip */}
-      <section className="py-10 border-y border-slate-50 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-12">Trusted by 500+ Associations Worldwide</p>
-          <div className="flex flex-wrap items-center justify-center gap-12 md:gap-24 opacity-40 grayscale hover:grayscale-0 transition-all">
-            {/* Logos placeholders */}
-            <div className="text-2xl font-bold font-serif">CommunityFirst</div>
-            <div className="text-2xl font-bold font-serif">ClubHub</div>
-            <div className="text-2xl font-bold font-serif">Assocify</div>
-            <div className="text-2xl font-bold font-serif">GuildLink</div>
-            <div className="text-2xl font-bold font-serif">UnionPoint</div>
-          </div>
-        </div>
-      </section>
-
       {/* Feature Highlights */}
       <section className="py-12 px-6">
         <div className="max-w-7xl mx-auto">
@@ -151,8 +136,8 @@ const Home: React.FC = () => {
             />
             <FeatureCard 
               icon={<Shield className="w-8 h-8" />}
-              title="Advanced Security"
-              description="Bank-grade encryption and role-based access for complete peace of mind."
+              title="Role-Based Security"
+              description="Password hashing, role-based access control, and full audit logging for accountability."
               delay={0.6}
             />
           </div>
@@ -226,23 +211,23 @@ const Home: React.FC = () => {
               <Lock className="w-12 h-12 text-brand-600" />
             </div>
             <div>
-              <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 mb-6">Your data, locked and protected.</h2>
+              <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 mb-6">Your data, protected by design.</h2>
               <p className="text-slate-500 text-base mb-8 max-w-2xl">
-                We use AES-256 encryption, regular security audits, and multi-factor authentication 
-                to ensure your association's data is always safe and private.
+                We hash all passwords before storage, enforce role-based access control across 
+                four permission levels, and maintain a comprehensive audit log of every action.
               </p>
               <div className="flex flex-wrap gap-8">
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-600 uppercase tracking-widest">
                   <CheckCircle className="w-5 h-5 text-brand-600" />
-                  SOC2 Compliant
+                  Hashed Passwords
                 </div>
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-600 uppercase tracking-widest">
                   <CheckCircle className="w-5 h-5 text-brand-600" />
-                  GDPR Ready
+                  Role-Based Access
                 </div>
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-600 uppercase tracking-widest">
                   <CheckCircle className="w-5 h-5 text-brand-600" />
-                  Weekly Backups
+                  Full Audit Logging
                 </div>
               </div>
             </div>

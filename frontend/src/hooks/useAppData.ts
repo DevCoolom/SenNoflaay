@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Member, Objective, Expense, Event, Correction, Bill, User, AuditLog, Payment, Task, MembershipFeeConfig } from '../types';
 import { insforge } from '../lib/insforge';
+import { hashPassword } from '../lib/crypto';
 
 export const useAppData = (associationId: string | null) => {
   const [members, setMembers] = useState<Member[]>([]);
@@ -214,7 +215,9 @@ export const useAppData = (associationId: string | null) => {
       amount: expense.amount,
       date: expense.date,
       description: expense.desc,
-      category: expense.category
+      category: expense.category,
+      receipt_url: expense.receiptUrl,
+      receipt_name: expense.receiptName
     });
     if (error) throw error;
     fetchData();
@@ -304,10 +307,11 @@ export const useAppData = (associationId: string | null) => {
 
   const addUser = async (user: Omit<User, 'associationId'>) => {
     if (!associationId) return;
+    const hashedPw = await hashPassword(user.password);
     const { error } = await insforge.database.from('users').insert({
       username: user.username,
       association_id: associationId,
-      password: user.password,
+      password: hashedPw,
       role: user.role
     });
     if (error) throw error;
@@ -316,10 +320,12 @@ export const useAppData = (associationId: string | null) => {
 
   const updateUser = async (username: string, user: Partial<User>) => {
     if (!associationId) return;
-    const { error } = await insforge.database.from('users').update({
-      password: user.password,
-      role: user.role
-    }).eq('username', username).eq('association_id', associationId);
+    const updateData: any = { role: user.role };
+    if (user.password) {
+      updateData.password = await hashPassword(user.password);
+    }
+    const { error } = await insforge.database.from('users').update(updateData)
+      .eq('username', username).eq('association_id', associationId);
     if (error) throw error;
     fetchData();
   };
@@ -496,6 +502,19 @@ export const useAppData = (associationId: string | null) => {
     fetchData();
   };
 
+  const uploadFile = async (bucket: string, file: File, path: string) => {
+    if (!associationId) return null;
+    try {
+      const { data, error } = await insforge.storage.from(bucket).upload(path, file);
+      if (error) throw error;
+      const { data: { publicUrl } } = insforge.storage.from(bucket).getPublicUrl(path);
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      return null;
+    }
+  };
+
   return {
     members,
     objectives,
@@ -536,7 +555,8 @@ export const useAppData = (associationId: string | null) => {
     updateTask,
     deleteTask,
     reorderTasks,
-    membershipFeeConfig
+    membershipFeeConfig,
+    uploadFile
   };
 };
 

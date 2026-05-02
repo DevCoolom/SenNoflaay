@@ -17,12 +17,12 @@ const Security: React.FC = () => {
               <Shield className="w-10 h-10" />
             </div>
             <h1 className="text-5xl md:text-7xl font-serif font-bold text-slate-900 mb-8 leading-tight">
-              Trust and security <br />
-              <span className="text-brand-600 italic serif-display">without compromise.</span>
+              Security built into <br />
+              <span className="text-brand-600 italic serif-display">every layer.</span>
             </h1>
             <p className="text-slate-500 text-xl leading-relaxed">
-              We treat your association's data with the same care and protection 
-              as a financial institution. Your security is our top priority.
+              We take a layered approach to protecting your association's data — from 
+              hashed passwords to strict role-based access and complete audit trails.
             </p>
           </motion.div>
         </div>
@@ -33,23 +33,23 @@ const Security: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
             <SecurityFeature 
               icon={<Lock className="w-10 h-10" />}
-              title="Data Encryption"
-              desc="All data is encrypted at rest using AES-256 and in transit using TLS 1.3. Your member information and financial records are never stored in plain text."
+              title="Password Hashing"
+              desc="All passwords are hashed using SHA-256 with application-level salting before being stored. Passwords are never saved or transmitted in plain text."
             />
             <SecurityFeature 
               icon={<Eye className="w-10 h-10" />}
-              title="Privacy by Design"
-              desc="We follow strict GDPR and CCPA guidelines. We never sell your data, and we provide tools for you to easily manage data access and deletion requests."
+              title="Role-Based Access Control"
+              desc="Four distinct permission levels — Superadmin, Admin, Treasurer, and Controller — ensure users only access the data relevant to their responsibilities."
             />
             <SecurityFeature 
               icon={<Server className="w-10 h-10" />}
-              title="Infrastructure"
-              desc="Our platform runs on enterprise-grade cloud providers with 99.9% uptime guarantees and physical security that meets industry standards."
+              title="Comprehensive Audit Logging"
+              desc="Every action in the system is logged with timestamps and user details, giving you full traceability and accountability for all changes."
             />
             <SecurityFeature 
               icon={<Cloud className="w-10 h-10" />}
-              title="Regular Backups"
-              desc="Your data is backed up every hour across multiple geographic regions to ensure that even in the case of a major disaster, your records are safe."
+              title="Secure Hosting"
+              desc="Our platform runs on Insforge's managed infrastructure with TLS encryption for all data in transit between your browser and our servers."
             />
           </div>
         </div>
@@ -61,22 +61,22 @@ const Security: React.FC = () => {
             <div className="absolute top-0 right-0 w-64 h-64 bg-brand-600/20 rounded-full blur-[80px]" />
             <h2 className="text-3xl md:text-4xl font-serif font-bold mb-10">Role-Based Access Control (RBAC)</h2>
             <p className="text-slate-400 text-lg mb-12 leading-relaxed">
-              You have complete control over who sees what. Define granular permissions for 
+              You have complete control over who sees what. Define permissions for 
               Superadmins, Admins, Treasurers, and Controllers to ensure that users only 
               access the data they need to do their jobs.
             </p>
             <div className="space-y-6">
               <div className="flex items-center gap-4 text-sm font-bold text-brand-400 uppercase tracking-widest">
                 <FileLock2 className="w-5 h-5" />
-                Audit Logs for every action
+                Audit logs for every action
               </div>
               <div className="flex items-center gap-4 text-sm font-bold text-brand-400 uppercase tracking-widest">
                 <FileLock2 className="w-5 h-5" />
-                Multi-factor authentication (MFA)
+                SHA-256 password hashing
               </div>
               <div className="flex items-center gap-4 text-sm font-bold text-brand-400 uppercase tracking-widest">
                 <FileLock2 className="w-5 h-5" />
-                Session monitoring and management
+                Association-scoped data isolation
               </div>
             </div>
           </div>

@@ -9,7 +9,8 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   Calendar as CalendarIcon,
-  Tag
+  Tag,
+  Paperclip
 } from 'lucide-react';
 import { Objective, Expense, Member, Bill, MembershipFeeConfig } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
@@ -72,7 +73,9 @@ const Finance: React.FC<FinanceProps> = ({
       desc: e.desc,
       objId: e.objectiveId,
       amount: e.amount,
-      category: e.category
+      category: e.category,
+      receiptUrl: e.receiptUrl,
+      receiptName: e.receiptName
     })),
     ...bills.map(b => ({
       id: b.id,
@@ -326,6 +329,17 @@ const Finance: React.FC<FinanceProps> = ({
                       </td>
                       <td className="px-8 py-5">
                         <p className="text-sm text-slate-900 font-bold">{item.desc}</p>
+                        {item.type === 'expense' && 'receiptUrl' in item && item.receiptUrl && (
+                          <a 
+                            href={item.receiptUrl} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 mt-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 transition-colors bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg"
+                          >
+                            <Paperclip className="w-3.5 h-3.5" />
+                            <span className="truncate max-w-[150px]">{item.receiptName || 'View Receipt'}</span>
+                          </a>
+                        )}
                       </td>
                       <td className="px-8 py-5">
                         <p className="text-sm text-slate-600">

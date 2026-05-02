@@ -19,9 +19,11 @@ import { ImportModal } from './components/ImportModal';
 import { useAppData } from './hooks/useAppData';
 import { Member, User, Objective, Event, Bill, Expense } from './types';
 import { formatCurrency } from './lib/utils';
-import { Shield, Lock, User as UserIcon, Globe, Clock, MapPin, Calendar as CalendarIcon, Users as UsersIcon } from 'lucide-react';
+import { Shield, Lock, User as UserIcon, Globe, Clock, MapPin, Calendar as CalendarIcon, Users as UsersIcon, Paperclip, UploadCloud } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './lib/LanguageContext';
+import { hashPassword } from './lib/crypto';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useDropzone } from 'react-dropzone';
 
 // Marketing Pages
 import Home from './marketing/Home';
@@ -120,14 +122,38 @@ function AppContent() {
     e.preventDefault();
     setLoginError('');
     try {
-      const { data, error } = await insforge.database.from('users')
+      const hashedPassword = await hashPassword(loginData.password);
+
+      // Try hashed password first (new accounts)
+      let { data, error } = await insforge.database.from('users')
         .select('*')
         .eq('association_id', loginData.associationId)
         .eq('username', loginData.username)
-        .eq('password', loginData.password)
+        .eq('password', hashedPassword)
         .maybeSingle();
 
       if (error) throw error;
+
+      // Fallback: try plain-text password (legacy accounts) and auto-migrate
+      if (!data) {
+        const { data: legacyData, error: legacyError } = await insforge.database.from('users')
+          .select('*')
+          .eq('association_id', loginData.associationId)
+          .eq('username', loginData.username)
+          .eq('password', loginData.password)
+          .maybeSingle();
+
+        if (legacyError) throw legacyError;
+
+        if (legacyData) {
+          // Silently upgrade the stored password to hashed
+          await insforge.database.from('users')
+            .update({ password: hashedPassword })
+            .eq('association_id', loginData.associationId)
+            .eq('username', loginData.username);
+          data = legacyData;
+        }
+      }
 
       if (data) {
         const userData = {
@@ -158,6 +184,7 @@ function AppContent() {
 
     try {
       const capitalizedUsername = regData.adminUsername.charAt(0).toUpperCase() + regData.adminUsername.slice(1);
+      const hashedPassword = await hashPassword(regData.adminPassword);
       
       // Check if association already exists
       const { data: existingAssoc } = await insforge.database.from('associations')
@@ -182,7 +209,7 @@ function AppContent() {
         .insert({
           username: capitalizedUsername,
           association_id: regData.id,
-          password: regData.adminPassword,
+          password: hashedPassword,
           role: 'superadmin'
         });
 
@@ -660,6 +687,7 @@ function AppContent() {
         type={modalType} 
         item={selectedItem} 
         membershipFeeConfig={membershipFeeConfig}
+        uploadFile={uploadFile}
         onClose={() => setModalType(null)}
         onSave={async (data) => {
           if (modalType === 'member') {
@@ -738,9 +766,28 @@ function AppContent() {
 }
 
 // Sub-component for all modals to keep App.tsx clean
-const MemberModals = ({ type, item, onClose, onSave, objectives, members, expenses, membershipFeeConfig }: any) => {
+const MemberModals = ({ type, item, onClose, onSave, objectives, members, expenses, membershipFeeConfig, uploadFile }: any) => {
   const { t } = useLanguage();
   const [formData, setFormData] = useState<any>({});
+  const [isUploading, setIsUploading] = useState(false);
+
+  const onDropReceipt = async (acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0 && uploadFile) {
+      setIsUploading(true);
+      const file = acceptedFiles[0];
+      const path = `${Date.now()}_${file.name}`;
+      const url = await uploadFile('receipts', file, path);
+      if (url) {
+        setFormData((prev: any) => ({ ...prev, receiptUrl: url, receiptName: file.name }));
+      }
+      setIsUploading(false);
+    }
+  };
+
+  const { getRootProps: getReceiptRootProps, getInputProps: getReceiptInputProps, isDragActive: isReceiptDragActive } = useDropzone({
+    accept: { 'image/*': [], 'application/pdf': [] },
+    onDrop: onDropReceipt
+  });
 
   const getTargetFee = (gender: string, isMinor: boolean) => {
     if (!membershipFeeConfig) return 0;
@@ -1079,6 +1126,33 @@ const MemberModals = ({ type, item, onClose, onSave, objectives, members, expens
                 value={formData.date || new Date().toISOString().split('T')[0]} 
                 onChange={e => setFormData({ ...formData, date: e.target.value })}
               />
+            </FormField>
+            <FormField label="Receipt / Attachment">
+              <div 
+                {...getReceiptRootProps()} 
+                className={`w-full p-6 border-2 border-dashed rounded-2xl text-center cursor-pointer transition-colors ${
+                  isReceiptDragActive ? 'border-brand-500 bg-brand-50' : 'border-slate-200 hover:border-brand-300 hover:bg-slate-50'
+                }`}
+              >
+                <input {...getReceiptInputProps()} />
+                {isUploading ? (
+                  <div className="flex flex-col items-center justify-center text-slate-500 gap-2">
+                    <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs font-medium">Uploading...</span>
+                  </div>
+                ) : formData.receiptUrl ? (
+                  <div className="flex items-center justify-center gap-2 text-emerald-600 font-medium text-sm">
+                    <Paperclip className="w-5 h-5" />
+                    {formData.receiptName || 'Receipt uploaded'}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-slate-500 gap-2">
+                    <UploadCloud className="w-8 h-8 text-slate-400" />
+                    <span className="text-sm font-medium">Drop a file here, or click to select</span>
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">PDF, JPG, PNG</span>
+                  </div>
+                )}
+              </div>
             </FormField>
           </div>
         );

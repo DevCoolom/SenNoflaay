@@ -46,6 +46,8 @@ export interface Expense {
   date: string;
   objectiveId?: string;
   category: string;
+  receiptUrl?: string;
+  receiptName?: string;
 }
 
 export interface Event {
@@ -58,6 +60,9 @@ export interface Event {
   place: string;
   description: string;
   participants?: number;
+  ticketPrice?: number;
+  maxTickets?: number;
+  registrationOpen?: boolean;
 }
 
 export interface Correction {
@@ -81,7 +86,9 @@ export interface Bill {
 export interface User {
   username: string;
   associationId: string;
-  role: 'superadmin' | 'admin' | 'treasury' | 'controller';
+  password?: string;
+  role: 'superadmin' | 'admin' | 'treasury' | 'controller' | 'member';
+  memberId?: string; // links to Member.id for member-role users
 }
 
 export interface AuditLog {
@@ -112,4 +119,54 @@ export interface MembershipFeeConfig {
   amountFemale: number;
   amountMinor: number;
   useCategories: boolean;
+}
+
+export interface Campaign {
+  id: string;
+  associationId: string;
+  title: string;
+  description: string;
+  goalAmount: number;
+  currentAmount: number;
+  startDate: string;
+  endDate: string;
+  status: 'active' | 'completed' | 'cancelled';
+  createdAt: string;
+}
+
+export interface Donation {
+  id: string;
+  associationId: string;
+  campaignId: string;
+  donorName: string;
+  donorEmail?: string;
+  amount: number;
+  message?: string;
+  date: string;
+  isAnonymous: boolean;
+}
+
+export interface Ticket {
+  id: string;
+  associationId: string;
+  eventId: string;
+  attendeeName: string;
+  attendeeEmail?: string;
+  ticketType: string;
+  price: number;
+  qrCode: string; // encoded ticket ID for scanning
+  checkedIn: boolean;
+  checkedInAt?: string;
+  purchasedAt: string;
+}
+
+export interface AppNotification {
+  id: string;
+  associationId: string;
+  targetUser?: string; // null = broadcast
+  title: string;
+  message: string;
+  type: 'reminder' | 'event' | 'payment' | 'task' | 'system';
+  read: boolean;
+  createdAt: string;
 }
