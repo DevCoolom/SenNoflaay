@@ -20,13 +20,14 @@ import { useLanguage } from '../lib/LanguageContext';
 interface BillsProps {
   bills: Bill[];
   onAddBill: (bill: Omit<Bill, 'id'>) => void;
+  onImportBill: () => void;
   onDeleteBill: (id: string) => void;
   canAdd: boolean;
   canEdit: boolean;
   canDelete: boolean;
 }
 
-const Bills: React.FC<BillsProps> = ({ bills, onAddBill, onDeleteBill, canAdd, canEdit, canDelete }) => {
+const Bills: React.FC<BillsProps> = ({ bills, onAddBill, onImportBill, onDeleteBill, canAdd, canEdit, canDelete }) => {
   const { t } = useLanguage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newBill, setNewBill] = useState({

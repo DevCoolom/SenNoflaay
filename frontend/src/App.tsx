@@ -735,7 +735,7 @@ function AppContent() {
         </div>
       )}
 
-      {activeTab === 'audit' && user.role === 'superadmin' && (
+      {activeTab === 'audit' && canViewAudit && (
         <Audit logs={auditLogs} />
       )}
 
@@ -835,6 +835,7 @@ function AppContent() {
         members={members}
         expenses={expenses}
       />
+    </Layout>
     )
   ) : null;
 

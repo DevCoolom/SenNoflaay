@@ -12,11 +12,20 @@ const Audit: React.FC<AuditProps> = ({ logs }) => {
   const [searchTerm, setSearchTerm] = React.useState('');
 
   const filteredLogs = React.useMemo(() => {
-    return logs.filter(log => 
-      log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.details.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    if (!normalizedSearch) return logs || [];
+
+    return (logs || []).filter((log) => {
+      const user = (log.user || '').toString().toLowerCase();
+      const action = (log.action || '').toString().toLowerCase();
+      const details = (log.details || '').toString().toLowerCase();
+
+      return (
+        user.includes(normalizedSearch) ||
+        action.includes(normalizedSearch) ||
+        details.includes(normalizedSearch)
+      );
+    });
   }, [logs, searchTerm]);
 
   return (
@@ -69,11 +78,11 @@ const Audit: React.FC<AuditProps> = ({ logs }) => {
                 filteredLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-brand-50/30 transition-colors group">
                     <td className="px-8 py-5 text-xs text-slate-400 font-medium whitespace-nowrap">
-                      {new Date(log.timestamp).toLocaleString()}
+                      {isNaN(new Date(log.timestamp).getTime()) ? (t('invalidDate') || 'Invalid Date') : new Date(log.timestamp).toLocaleString()}
                     </td>
                     <td className="px-8 py-5">
                       <span className="px-3 py-1 bg-slate-50 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-widest group-hover:bg-brand-50 group-hover:text-brand-700 transition-colors">
-                        {log.user}
+                        {log.user || (t('unknownUser') || 'Unknown User')}
                       </span>
                     </td>
                     <td className="px-8 py-5 text-sm font-bold text-slate-900">

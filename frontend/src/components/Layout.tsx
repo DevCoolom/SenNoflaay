@@ -88,9 +88,9 @@ const Layout: React.FC<LayoutProps> = ({
       <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-100 sticky top-0 h-screen z-40">
         <div className="p-8 flex flex-col gap-4">
           {settings?.logo_url ? (
-            <img src={settings.logo_url} alt="Logo" className="h-20 w-auto object-contain self-start" />
+            <img src={settings.logo_url} alt="Logo" className="h-12 w-auto object-contain self-start" />
           ) : (
-            <Logo className="h-24" textColor="#0f172a" />
+            <Logo className="h-12" textColor="#0f172a" />
           )}
         </div>
 
@@ -189,9 +189,9 @@ const Layout: React.FC<LayoutProps> = ({
         <div className="px-6 h-20 flex justify-between items-center">
           <div className="flex items-center gap-3">
             {settings?.logo_url ? (
-              <img src={settings.logo_url} alt="Logo" className="h-14 w-auto object-contain" />
+              <img src={settings.logo_url} alt="Logo" className="h-5 w-auto object-contain" />
             ) : (
-              <Logo className="h-16" textColor="#0f172a" />
+              <Logo className="h-5" textColor="#0f172a" />
             )}
           </div>
 

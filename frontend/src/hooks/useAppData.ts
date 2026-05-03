@@ -86,7 +86,12 @@ export const useAppData = (associationId: string | null) => {
       setBills(billsData?.map((b: any) => ({ ...b, associationId: b.association_id, fileUrl: b.file_url, fileName: b.file_name })) || []);
       setCorrections(correctionsData?.map((c: any) => ({ ...c, associationId: c.association_id })) || []);
       setUsers(usersData?.map((u: any) => ({ ...u, associationId: u.association_id, memberId: u.member_id })) || []);
-      setAuditLogs(auditLogsData?.map((l: any) => ({ ...l, associationId: l.association_id, user: l.user_name })) || []);
+      setAuditLogs(auditLogsData?.map((l: any) => ({
+        ...l,
+        associationId: l.association_id,
+        user: l.user_name || l.user || 'System',
+        timestamp: l.timestamp || l.created_at || new Date().toISOString()
+      })) || []);
       setSettings(settingsData?.reduce((acc: any, s: any) => ({ ...acc, [s.key]: s.value }), {}) || {});
       setTasks(tasksData?.map((t: any) => ({ ...t, associationId: t.association_id, createdAt: t.created_at })) || []);
       
