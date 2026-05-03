@@ -40,7 +40,7 @@ const MarketingLayout: React.FC<MarketingLayoutProps> = ({ children }) => {
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <Logo className="h-4" textColor="#0f172a" />
+            <Logo className="h-5 md:h-10" textColor="#0f172a" />
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
