@@ -123,11 +123,11 @@ const Pricing: React.FC = () => {
                   ))}
                 </div>
 
-                <Link 
-                  to="/demo"
+                <Link
+                  to="/login?register=true"
                   className={`block w-full py-5 rounded-2xl font-bold text-xs uppercase tracking-widest text-center transition-all ${
-                    tier.popular 
-                      ? 'bg-brand-600 text-white hover:bg-brand-700 shadow-xl shadow-brand-100' 
+                    tier.popular
+                      ? 'bg-brand-600 text-white hover:bg-brand-700 shadow-xl shadow-brand-100'
                       : 'bg-slate-50 text-slate-700 hover:bg-slate-100'
                   }`}
                 >

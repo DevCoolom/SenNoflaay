@@ -22,7 +22,7 @@ import { formatCurrency } from './lib/utils';
 import { Shield, Lock, User as UserIcon, Globe, Clock, MapPin, Calendar as CalendarIcon, Users as UsersIcon, Paperclip, UploadCloud } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './lib/LanguageContext';
 import { hashPassword } from './lib/crypto';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import MemberPortal from './components/MemberPortal';
 import Fundraising from './components/Fundraising';
@@ -101,6 +101,8 @@ function AppContent() {
     reorderTasks,
     bulkAddTasks,
     loading,
+    error: dataError,
+    refetch,
     uploadFile,
     campaigns,
     donations,
@@ -125,7 +127,8 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [loginData, setLoginData] = useState({ associationId: '', username: '', password: '' });
   const [loginError, setLoginError] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [isRegistering, setIsRegistering] = useState(searchParams.get('register') === 'true');
   const [regData, setRegData] = useState({ id: '', name: '', adminUsername: '', adminPassword: '' });
 
   // Modal states
@@ -506,8 +509,19 @@ function AppContent() {
           setActiveTab(link);
         }}
       >
+        {dataError && (
+          <div className="mx-4 mt-4 flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+            <span className="flex-1">{dataError}</span>
+            <button
+              onClick={refetch}
+              className="shrink-0 rounded bg-red-100 px-2 py-1 text-xs font-medium hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800"
+            >
+              Retry
+            </button>
+          </div>
+        )}
         {activeTab === 'dashboard' && (
-          <Dashboard 
+          <Dashboard
             members={members}
           objectives={objectives}
           expenses={expenses}

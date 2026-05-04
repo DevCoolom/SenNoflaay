@@ -10,6 +10,7 @@ export interface Member {
   associationId: string;
   firstName: string;
   lastName: string;
+  name?: string;
   tel: string;
   city?: string;
   fee: number;
@@ -59,6 +60,7 @@ export interface Event {
   time: string;
   place: string;
   description: string;
+  bookId?: string;
   participants?: number;
   ticketPrice?: number;
   maxTickets?: number;
@@ -79,6 +81,7 @@ export interface Bill {
   amount: number;
   date: string;
   category: string;
+  description?: string;
   fileUrl?: string;
   fileName?: string;
 }
@@ -131,6 +134,7 @@ export interface Campaign {
   startDate: string;
   endDate: string;
   status: 'active' | 'completed' | 'cancelled';
+  imageUrl?: string;
   createdAt: string;
 }
 
@@ -163,10 +167,12 @@ export interface Ticket {
 export interface AppNotification {
   id: string;
   associationId: string;
-  targetUser?: string; // null = broadcast
+  targetRole?: string;
+  targetUserId?: string;
   title: string;
   message: string;
   type: 'reminder' | 'event' | 'payment' | 'task' | 'system';
-  read: boolean;
+  isRead: boolean;
+  link?: string;
   createdAt: string;
 }

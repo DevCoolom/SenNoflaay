@@ -40,7 +40,7 @@ const MarketingLayout: React.FC<MarketingLayoutProps> = ({ children }) => {
       >
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <Logo className="h-5 md:h-10" textColor="#0f172a" />
+            <Logo className="h-6 md:h-10" textColor="#0f172a" />
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
@@ -64,8 +64,8 @@ const MarketingLayout: React.FC<MarketingLayoutProps> = ({ children }) => {
             >
               Sign In
             </Link>
-            <Link 
-              to="/demo"
+            <Link
+              to="/login?register=true"
               className="bg-brand-600 hover:bg-brand-700 text-white px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-xl shadow-brand-100 active:scale-95"
             >
               Start free trial
@@ -99,12 +99,19 @@ const MarketingLayout: React.FC<MarketingLayoutProps> = ({ children }) => {
                     {link.name}
                   </Link>
                 ))}
-                <Link 
+                <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="text-lg font-serif font-bold text-slate-900 border-t pt-6"
                 >
                   Sign In
+                </Link>
+                <Link
+                  to="/login?register=true"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full text-center bg-brand-600 text-white py-4 rounded-2xl font-bold text-sm uppercase tracking-widest"
+                >
+                  Start free trial
                 </Link>
               </div>
             </motion.div>

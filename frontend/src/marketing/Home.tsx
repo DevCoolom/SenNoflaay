@@ -48,8 +48,8 @@ const Home: React.FC = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-20">
-              <Link 
-                to="/demo" 
+              <Link
+                to="/login?register=true"
                 className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white px-10 py-5 rounded-[2rem] font-bold text-sm uppercase tracking-widest transition-all shadow-2xl shadow-brand-200 active:scale-95 flex items-center justify-center gap-2 group"
               >
                 Start free trial
