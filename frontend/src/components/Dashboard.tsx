@@ -137,11 +137,11 @@ const Dashboard: React.FC<DashboardProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-serif font-bold text-slate-900">{t('dashboard')}</h2>
-          <div className="bg-brand-50 border border-brand-100 px-4 py-2 rounded-2xl flex items-center gap-2">
-            <span className="text-[10px] font-bold text-brand-600 uppercase tracking-widest">Association ID:</span>
-            <code className="text-sm font-mono font-bold text-brand-900 bg-white px-2 py-0.5 rounded border border-brand-100">{associationId || 'N/A'}</code>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-2xl font-serif font-bold text-slate-900 shrink-0">{t('dashboard')}</h2>
+          <div className="bg-brand-50 border border-brand-100 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 min-w-0">
+            <span className="hidden sm:block text-[10px] font-bold text-brand-600 uppercase tracking-widest shrink-0">Association ID:</span>
+            <code className="text-xs font-mono font-bold text-brand-900 bg-white px-2 py-0.5 rounded border border-brand-100 truncate">{associationId || 'N/A'}</code>
           </div>
         </div>
         <p className="text-slate-500 text-sm">{t('comprehensiveOverview')}</p>

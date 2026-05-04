@@ -46,7 +46,9 @@ interface EventsProps {
 
 const Events: React.FC<EventsProps> = ({ events, onAddEvent, onImportEvent, onEditEvent, onDeleteEvent, onViewEvent, canAdd, canEdit, canDelete }) => {
   const { t } = useLanguage();
-  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>(() =>
+    window.innerWidth < 768 ? 'list' : 'calendar'
+  );
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const sortedEvents = [...events].sort((a, b) => {
@@ -122,7 +124,7 @@ const Events: React.FC<EventsProps> = ({ events, onAddEvent, onImportEvent, onEd
           ))}
         </div>
         
-        <div className="grid grid-cols-7 auto-rows-[120px]">
+        <div className="grid grid-cols-7 auto-rows-[80px] md:auto-rows-[120px]">
           {days.map((day, idx) => {
             const dayEvents = events.filter(e => e.date === format(day, 'yyyy-MM-dd'));
             const isCurrentMonth = isSameMonth(day, monthStart);
