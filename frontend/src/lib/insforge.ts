@@ -1,9 +1,12 @@
-import { createClient } from '@insforge/sdk';
+import { createClient } from '@supabase/supabase-js';
 
-const insforgeUrl = import.meta.env.VITE_INSFORGE_URL;
-const insforgeAnonKey = import.meta.env.VITE_INSFORGE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const insforge = createClient({
-  baseUrl: insforgeUrl,
-  anonKey: insforgeAnonKey
-});
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Compatibility shim — keeps all existing insforge.database.from() and insforge.storage.from() calls working
+export const insforge = {
+  database: supabase,
+  storage: supabase.storage,
+};

@@ -570,8 +570,8 @@ export const useAppData = (associationId: string | null) => {
     try {
       const { data, error } = await insforge.storage.from(bucket).upload(path, file);
       if (error) throw error;
-      const urlResult = (insforge.storage.from(bucket).getPublicUrl(path) as any);
-      const publicUrl: string = urlResult?.data?.publicUrl ?? urlResult;
+      const { data: urlData } = insforge.storage.from(bucket).getPublicUrl(path);
+      const publicUrl: string = urlData.publicUrl;
       return publicUrl;
     } catch (error) {
       console.error('Error uploading file:', error);
