@@ -42,7 +42,7 @@ const Fundraising: React.FC<FundraisingProps> = ({
   const copyDonationLink = (campaignId: string) => {
     const url = `${window.location.origin}/donate/${associationId}?campaign=${campaignId}`;
     navigator.clipboard.writeText(url);
-    alert('Donation link copied to clipboard!');
+    alert(t('linkCopied'));
   };
 
   return (

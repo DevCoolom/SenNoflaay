@@ -79,10 +79,10 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ notifications, onMa
             className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-50 overflow-hidden card-shadow"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-50">
-              <h3 className="font-bold text-slate-900 text-sm">Notifications</h3>
+              <h3 className="font-bold text-slate-900 text-sm">{t('notificationsTitle')}</h3>
               {unreadCount > 0 && (
                 <span className="bg-brand-50 text-brand-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  {unreadCount} New
+                  {unreadCount} {t('notificationsNew')}
                 </span>
               )}
             </div>
@@ -122,8 +122,8 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ notifications, onMa
                   <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
                     <Bell className="w-5 h-5 text-slate-300" />
                   </div>
-                  <p className="text-sm font-bold text-slate-900">All caught up!</p>
-                  <p className="text-xs text-slate-500 mt-1">You have no notifications right now.</p>
+                  <p className="text-sm font-bold text-slate-900">{t('allCaughtUp')}</p>
+                  <p className="text-xs text-slate-500 mt-1">{t('noNotificationsText')}</p>
                 </div>
               )}
             </div>
@@ -136,7 +136,7 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ notifications, onMa
                   }}
                   className="w-full py-2 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors"
                 >
-                  Mark all as read
+                  {t('markAllAsRead')}
                 </button>
               </div>
             )}

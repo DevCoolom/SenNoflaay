@@ -46,27 +46,27 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
   const plans = [
     {
-      name: 'Starter',
+      name: t('planStarterName'),
       price: '$0',
-      description: 'Perfect for small clubs',
+      description: t('planStarterDesc'),
       features: ['Up to 50 members', 'Basic financial tracking', 'Event management', 'Email support'],
-      cta: 'Get Started Free',
+      cta: t('planStarterCta'),
       popular: false
     },
     {
-      name: 'Professional',
+      name: t('planProfessionalName'),
       price: '$29',
-      description: 'For growing organizations',
+      description: t('planProfessionalDesc'),
       features: ['Unlimited members', 'Advanced financial reports', 'PDF bill management', 'Fundraising campaigns', 'Priority support'],
-      cta: 'Start Professional',
+      cta: t('planProfessionalCta'),
       popular: true
     },
     {
-      name: 'Enterprise',
+      name: t('planEnterpriseName'),
       price: '$99',
-      description: 'For large associations',
+      description: t('planEnterpriseDesc'),
       features: ['Everything in Professional', 'Custom integrations', 'Advanced analytics', 'Dedicated support', 'SLA guarantee'],
-      cta: 'Contact Sales',
+      cta: t('planEnterpriseCta'),
       popular: false
     }
   ];
@@ -93,11 +93,11 @@ const LandingPage: React.FC<LandingPageProps> = ({
           animate={{ opacity: 1, y: 0 }}
           className="bg-white p-10 md:p-14 rounded-[3rem] card-shadow w-full max-w-xl border border-slate-100 relative z-10"
         >
-          <button 
+          <button
             onClick={() => setView('landing')}
             className="absolute top-8 left-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-brand-600 transition-colors flex items-center gap-2"
           >
-            ← Back to Home
+            {t('backToHome')}
           </button>
 
           <div className="flex flex-col items-center mb-10">
@@ -105,10 +105,10 @@ const LandingPage: React.FC<LandingPageProps> = ({
               <Shield className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-4xl font-serif font-bold text-slate-900 text-center leading-tight mb-2">
-              {view === 'register' ? 'Join the Community' : appName}
+              {view === 'register' ? t('joinTheCommunity') : appName}
             </h2>
             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-              {view === 'register' ? 'Create your association account' : 'Welcome back to your dashboard'}
+              {view === 'register' ? t('createAssocAccount') : t('welcomeBackDashboard')}
             </p>
           </div>
 
@@ -122,7 +122,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                     type="text"
                     required
                     className="w-full pl-12 pr-6 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium"
-                    placeholder="Enter your username"
+                    placeholder={t('enterYourUsername')}
                     value={loginData.username}
                     onChange={e => setLoginData({ ...loginData, username: e.target.value })}
                   />
@@ -157,13 +157,13 @@ const LandingPage: React.FC<LandingPageProps> = ({
 
               <div className="text-center pt-4">
                 <p className="text-xs text-slate-400 font-medium">
-                  Don't have an account?{' '}
-                  <button 
+                  {t('dontHaveAccount')}{' '}
+                  <button
                     type="button"
                     onClick={() => setView('register')}
                     className="text-brand-600 font-bold hover:underline"
                   >
-                    Register now
+                    {t('registerNow')}
                   </button>
                 </p>
               </div>
@@ -172,23 +172,23 @@ const LandingPage: React.FC<LandingPageProps> = ({
             <form onSubmit={onRegister} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Assoc ID</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('assocId')}</label>
                   <input
                     type="text"
                     required
                     className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
-                    placeholder="e.g. my-assoc"
+                    placeholder={t('assocIdPlaceholder')}
                     value={regData.id}
                     onChange={e => setRegData({ ...regData, id: e.target.value })}
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Assoc Name</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('assocName')}</label>
                   <input
                     type="text"
                     required
                     className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
-                    placeholder="Full Name"
+                    placeholder={t('fullName')}
                     value={regData.name}
                     onChange={e => setRegData({ ...regData, name: e.target.value })}
                   />
@@ -196,19 +196,19 @@ const LandingPage: React.FC<LandingPageProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Username</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('adminUsername')}</label>
                 <input
                   type="text"
                   required
                   className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
-                  placeholder="Admin username"
+                  placeholder={t('adminUsernamePlaceholder')}
                   value={regData.adminUsername}
                   onChange={e => setRegData({ ...regData, adminUsername: e.target.value })}
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Password</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('adminPassword')}</label>
                 <input
                   type="password"
                   required
@@ -223,16 +223,16 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 type="submit"
                 className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-brand-100 active:scale-[0.98] text-xs uppercase tracking-widest mt-2"
               >
-                Create Association
+                {t('createAssociation')}
               </button>
 
               <div className="text-center pt-2">
-                <button 
+                <button
                   type="button"
                   onClick={() => setView('login')}
                   className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:text-brand-600 transition-colors"
                 >
-                  Already have an account? Sign In
+                  {t('alreadyHaveAccount')}
                 </button>
               </div>
             </form>
@@ -255,23 +255,23 @@ const LandingPage: React.FC<LandingPageProps> = ({
           </div>
           
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">Features</a>
-            <a href="#pricing" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">Pricing</a>
-            <a href="#about" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">About</a>
+            <a href="#features" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">{t('navFeatures')}</a>
+            <a href="#pricing" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">{t('navPricing')}</a>
+            <a href="#about" className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors">{t('navAbout')}</a>
           </div>
 
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => setView('login')}
               className="text-sm font-medium text-slate-600 hover:text-brand-600 transition-colors px-4"
             >
-              Login
+              {t('navLogin')}
             </button>
-            <button 
+            <button
               onClick={() => setView('register')}
               className="bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-md shadow-brand-100"
             >
-              Sign Up
+              {t('navSignUp')}
             </button>
           </div>
         </div>
@@ -287,42 +287,39 @@ const LandingPage: React.FC<LandingPageProps> = ({
               transition={{ duration: 0.8 }}
             >
               <h1 className="text-6xl md:text-7xl font-bold text-slate-900 leading-[1.1] tracking-tight mb-8">
-                Manage your <br />
-                club with <br />
-                confidence
+                {t('heroTitle')}
               </h1>
               <p className="max-w-xl text-slate-500 text-lg md:text-xl mb-10 leading-relaxed">
-                The ultimate multi-tenant platform for associations. Streamline 
-                members, finances, events, and bills in one powerful dashboard.
+                {t('heroSubtitle')}
               </p>
-              
+
               <div className="flex flex-col sm:flex-row items-center gap-4 mb-12">
-                <button 
+                <button
                   onClick={() => setView('register')}
                   className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white px-8 py-4 rounded-lg font-bold text-sm transition-all shadow-lg shadow-brand-100 flex items-center justify-center gap-2"
                 >
-                  Create Club
+                  {t('createClub')}
                 </button>
-                <button 
+                <button
                   onClick={handleDemo}
                   className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-8 py-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center"
                 >
-                  View Demo
+                  {t('viewDemo')}
                 </button>
               </div>
 
               <div className="flex flex-wrap items-center gap-6 text-slate-400">
                 <div className="flex items-center gap-2 text-xs font-medium">
                   <CheckCircle2 className="w-4 h-4 text-brand-500" />
-                  Multi-tenant
+                  {t('featureMultiTenant')}
                 </div>
                 <div className="flex items-center gap-2 text-xs font-medium">
                   <CheckCircle2 className="w-4 h-4 text-brand-500" />
-                  RBAC Roles
+                  {t('featureRBAC')}
                 </div>
                 <div className="flex items-center gap-2 text-xs font-medium">
                   <CheckCircle2 className="w-4 h-4 text-brand-500" />
-                  Bill PDF Uploads
+                  {t('featureBillPDF')}
                 </div>
               </div>
             </motion.div>
@@ -368,7 +365,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
       <section id="features" className="py-32 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-bold text-slate-900 mb-6">Everything you need to run your club</h2>
+            <h2 className="text-4xl font-bold text-slate-900 mb-6">{t('featuresTitle')}</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -376,24 +373,24 @@ const LandingPage: React.FC<LandingPageProps> = ({
               <div className="w-12 h-12 bg-brand-50 rounded-lg flex items-center justify-center mb-8">
                 <Shield className="w-6 h-6 text-brand-600" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Multi-Tenant Auth</h3>
-              <p className="text-slate-500 text-sm leading-relaxed">Securely isolate your club data while managing users efficiently.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">{t('feature1Title')}</h3>
+              <p className="text-slate-500 text-sm leading-relaxed">{t('feature1Desc')}</p>
             </div>
 
             <div className="bg-slate-50/50 p-10 rounded-2xl border border-slate-100 hover:shadow-xl transition-all">
               <div className="w-12 h-12 bg-brand-50 rounded-lg flex items-center justify-center mb-8">
                 <PieChart className="w-6 h-6 text-brand-600" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Financial Management</h3>
-              <p className="text-slate-500 text-sm leading-relaxed">Track payments, expenses, and fundraising with real-time reporting.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">{t('feature2Title')}</h3>
+              <p className="text-slate-500 text-sm leading-relaxed">{t('feature2Desc')}</p>
             </div>
 
             <div className="bg-slate-50/50 p-10 rounded-2xl border border-slate-100 hover:shadow-xl transition-all">
               <div className="w-12 h-12 bg-brand-50 rounded-lg flex items-center justify-center mb-8">
                 <Calendar className="w-6 h-6 text-brand-600" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">Document Storage</h3>
-              <p className="text-slate-500 text-sm leading-relaxed">Upload and manage PDF bills with integrated review workflow.</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">{t('feature3Title')}</h3>
+              <p className="text-slate-500 text-sm leading-relaxed">{t('feature3Desc')}</p>
             </div>
           </div>
         </div>
@@ -403,8 +400,8 @@ const LandingPage: React.FC<LandingPageProps> = ({
       <section id="pricing" className="py-32 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-slate-500">Choose the perfect plan for your club. All plans include unlimited members and full platform access.</p>
+            <h2 className="text-4xl font-bold text-slate-900 mb-4">{t('pricingTitle')}</h2>
+            <p className="text-slate-500">{t('pricingSubtitle')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -417,7 +414,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
               >
                 {plan.popular && (
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-brand-600 text-white px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                    Most Popular
+                    {t('mostPopular')}
                   </div>
                 )}
                 <div className="text-center mb-8">
@@ -428,7 +425,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 <div className="text-center mb-8">
                   <div className="flex items-center justify-center gap-1">
                     <span className="text-4xl font-bold text-slate-900">{plan.price}</span>
-                    <span className="text-slate-400 text-sm">/month</span>
+                    <span className="text-slate-400 text-sm">{t('perMonth')}</span>
                   </div>
                 </div>
                 
@@ -455,7 +452,7 @@ const LandingPage: React.FC<LandingPageProps> = ({
             ))}
           </div>
           <div className="text-center mt-12">
-            <p className="text-xs text-slate-400">All plans include 14-day free trial. No credit card required.</p>
+            <p className="text-xs text-slate-400">{t('freeTrial')}</p>
           </div>
         </div>
       </section>
@@ -472,31 +469,31 @@ const LandingPage: React.FC<LandingPageProps> = ({
                 <span className="text-xl font-serif font-bold tracking-tight">{appName}</span>
               </div>
               <p className="text-slate-400 max-w-xs leading-relaxed">
-                Empowering communities with modern management tools. Built with love for associations worldwide.
+                {t('footerTagline')}
               </p>
             </div>
-            
+
             <div>
-              <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-6">Platform</h4>
+              <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-6">{t('footerPlatform')}</h4>
               <ul className="space-y-4">
-                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">Features</a></li>
-                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">Pricing</a></li>
-                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">Security</a></li>
+                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">{t('navFeatures')}</a></li>
+                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">{t('navPricing')}</a></li>
+                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">{t('footerSecurity')}</a></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-6">Company</h4>
+              <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-6">{t('footerCompany')}</h4>
               <ul className="space-y-4">
-                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">About Us</a></li>
-                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">Contact</a></li>
-                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">{t('footerAboutUs')}</a></li>
+                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">{t('footerContactUs')}</a></li>
+                <li><a href="#" className="text-sm text-slate-400 hover:text-brand-600 transition-colors">{t('footerPrivacy')}</a></li>
               </ul>
             </div>
           </div>
 
           <div className="flex flex-col md:flex-row items-center justify-between pt-10 border-t border-slate-50">
-            <p className="text-xs text-slate-400">© 2026 {appName}. All rights reserved.</p>
+            <p className="text-xs text-slate-400">© 2026 {appName}. {t('footerCopyright')}</p>
             <div className="flex items-center gap-6 mt-6 md:mt-0">
               <Globe className="w-4 h-4 text-slate-300" />
               <span className="text-xs text-slate-400">English (US)</span>

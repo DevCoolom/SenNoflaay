@@ -77,7 +77,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, onUpdateSetting, membersh
               placeholder="https://example.com/logo.png"
             />
           </div>
-          <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-2 ml-1">Enter a URL for your organization logo.</p>
+          <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-2 ml-1">{t('logoUrlHelp')}</p>
         </FormField>
 
         <FormField label={t('appName')} required>
@@ -94,7 +94,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, onUpdateSetting, membersh
 
         {logoUrl && (
           <div className="pt-4">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1">Logo Preview</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 ml-1">{t('logoPreview')}</p>
             <div className="p-8 bg-slate-50/50 rounded-3xl border border-dashed border-slate-100 flex justify-center">
               <img src={logoUrl} alt="Preview" className="h-32 w-auto object-contain" referrerPolicy="no-referrer" onError={(e) => (e.currentTarget.style.display = 'none')} />
             </div>
@@ -104,7 +104,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, onUpdateSetting, membersh
         <div className="pt-8 flex items-center justify-end gap-4">
           {showAppConfirmation && (
             <p className="text-sm font-bold text-emerald-600 uppercase tracking-widest">
-              Settings saved successfully!
+              {t('settingsSaved')}
             </p>
           )}
           <button
@@ -226,7 +226,7 @@ const Settings: React.FC<SettingsProps> = ({ settings, onUpdateSetting, membersh
         <div className="pt-8 flex items-center justify-end gap-4">
           {showFeeConfirmation && (
             <p className="text-sm font-bold text-emerald-600 uppercase tracking-widest">
-              Settings saved successfully!
+              {t('settingsSaved')}
             </p>
           )}
           <button
