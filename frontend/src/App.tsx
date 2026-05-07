@@ -64,6 +64,7 @@ function AppContent() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
   
   const {
     members,
@@ -276,6 +277,7 @@ function AppContent() {
   useEffect(() => {
     const stored = sessionStorage.getItem('pkst_user');
     if (stored) setUser(JSON.parse(stored));
+    setSessionChecked(true);
   }, []);
 
   const handleLogout = (associationId?: string) => {
@@ -302,16 +304,22 @@ function AppContent() {
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-serif font-bold text-slate-900 text-center leading-tight">
-            {isRegistering ? 'Register Association' : (settings.app_name || 'Association Management')}
+            {isRegistering ? 'Register Association' : 'Welcome Back'}
           </h2>
           <div className="h-1 w-10 bg-brand-600 rounded-full mt-2 mb-1.5" />
           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-            {isRegistering ? 'Create your platform account' : 'Sign in to your association'}
+            {isRegistering ? 'Create your platform account' : 'Access your association'}
           </p>
         </div>
 
         {!isRegistering ? (
-          <form onSubmit={handleLogin} className="space-y-3 relative z-10">
+          <form
+            onSubmit={e => { e.preventDefault(); const slug = loginData.associationId.trim(); if (slug) navigate(`/app/${slug}`); }}
+            className="space-y-3 relative z-10"
+          >
+            <p className="text-xs text-slate-500 text-center leading-relaxed">
+              Enter your association ID to access your login page.
+            </p>
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Association ID</label>
               <div className="relative group">
@@ -319,6 +327,7 @@ function AppContent() {
                 <input
                   type="text"
                   required
+                  autoFocus
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
                   placeholder="e.g. my-assoc"
                   value={loginData.associationId}
@@ -327,55 +336,15 @@ function AppContent() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('username')}</label>
-              <div className="relative group">
-                <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
-                <input
-                  type="text"
-                  required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
-                  placeholder={t('username')}
-                  value={loginData.username}
-                  onChange={e => setLoginData(prev => ({ ...prev, username: e.target.value }))}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('password')}</label>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
-                <input
-                  type="password"
-                  required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
-                  placeholder={t('password')}
-                  value={loginData.password}
-                  onChange={e => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                />
-              </div>
-            </div>
-
-            {loginError && (
-              <motion.p 
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="text-xs text-red-500 font-bold text-center uppercase tracking-wider"
-              >
-                {loginError}
-              </motion.p>
-            )}
-
             <button
               type="submit"
               className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl transition-all shadow-xl shadow-brand-100 active:scale-[0.98] text-xs uppercase tracking-[0.2em] mt-1"
             >
-              {t('signIn')}
+              Continue
             </button>
 
             <div className="text-center mt-4">
-              <button 
+              <button
                 type="button"
                 onClick={() => setIsRegistering(true)}
                 className="text-[10px] text-brand-600 font-bold uppercase tracking-widest hover:underline"
@@ -886,6 +855,7 @@ function AppContent() {
       <Route path="/app/:slug" element={
         <SlugRoute
           user={user}
+          sessionChecked={sessionChecked}
           loginData={loginData}
           setLoginData={setLoginData}
           loginError={loginError}
@@ -1702,6 +1672,7 @@ const MemberModals = ({ type, item, onClose, onSave, objectives, members, expens
 // ─── Slug-aware route: /app/:slug ────────────────────────────────────────────
 interface SlugRouteProps {
   user: User | null;
+  sessionChecked: boolean;
   loginData: { associationId: string; username: string; password: string };
   setLoginData: (d: any) => void;
   loginError: string;
@@ -1719,6 +1690,7 @@ interface SlugRouteProps {
 
 function SlugRoute({
   user,
+  sessionChecked,
   loginData,
   setLoginData,
   loginError,
@@ -1741,6 +1713,14 @@ function SlugRoute({
       setLoginData((prev: any) => ({ ...prev, associationId: slug }));
     }
   }, [slug]);
+
+  if (!sessionChecked) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (user && user.associationId === slug) {
     return <>{authenticatedContent}</>;
