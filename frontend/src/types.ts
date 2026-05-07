@@ -176,3 +176,24 @@ export interface AppNotification {
   link?: string;
   createdAt: string;
 }
+
+export interface Invite {
+  id: string;
+  token: string;
+  associationId: string;
+  role: User['role'];
+  memberId?: string;
+  expiresAt: string;
+  used: boolean;
+  createdAt: string;
+}
+
+export interface PasswordReset {
+  id: string;
+  token: string;
+  associationId: string;
+  username: string;
+  expiresAt: string;
+  used: boolean;
+  createdAt: string;
+}

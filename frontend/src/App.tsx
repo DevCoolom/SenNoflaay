@@ -22,12 +22,17 @@ import { formatCurrency } from './lib/utils';
 import { Shield, Lock, User as UserIcon, Globe, Clock, MapPin, Calendar as CalendarIcon, Users as UsersIcon, Paperclip, UploadCloud } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './lib/LanguageContext';
 import { hashPassword } from './lib/crypto';
-import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import MemberPortal from './components/MemberPortal';
 import Fundraising from './components/Fundraising';
 import DonationPage from './components/DonationPage';
 import { useNotificationGenerator } from './hooks/useNotificationGenerator';
+
+// Auth pages
+import InvitePage from './components/InvitePage';
+import ForgotPasswordPage from './components/ForgotPasswordPage';
+import ResetPasswordPage from './components/ResetPasswordPage';
 
 // Marketing Pages
 import Home from './marketing/Home';
@@ -57,6 +62,7 @@ export default function App() {
 
 function AppContent() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   
   const {
@@ -252,9 +258,14 @@ function AppContent() {
         { association_id: regData.id, key: 'app_name', value: regData.name }
       ]);
 
-      setIsRegistering(false);
-      setLoginData({ associationId: regData.id, username: capitalizedUsername, password: regData.adminPassword });
-      alert('Association registered successfully! Please login with your admin credentials.');
+      const userData: User = {
+        username: capitalizedUsername,
+        role: 'superadmin',
+        associationId: regData.id,
+      };
+      setUser(userData);
+      sessionStorage.setItem('pkst_user', JSON.stringify(userData));
+      navigate(`/app/${regData.id}`);
       
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -267,9 +278,11 @@ function AppContent() {
     if (stored) setUser(JSON.parse(stored));
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = (associationId?: string) => {
+    const slug = associationId || user?.associationId;
     setUser(null);
     sessionStorage.removeItem('pkst_user');
+    if (slug) navigate(`/app/${slug}`);
   };
 
   const loginView = (
@@ -862,17 +875,34 @@ function AppContent() {
       <Route path="/faq" element={<FAQ />} />
       <Route path="/demo" element={<Demo />} />
       <Route path="/support" element={<Support />} />
-      
-      <Route path="/login" element={user ? <Navigate to="/app" /> : loginView} />
+
+      <Route path="/login" element={user ? <Navigate to={`/app/${user.associationId}`} /> : loginView} />
       <Route path="/donate/:associationId" element={<DonationPage />} />
-      <Route path="/app" element={
-        user ? (
-          authenticatedView
-        ) : (
-          <Navigate to="/login" replace />
-        )
+
+      {/* Slug-based app routes */}
+      <Route path="/app/:slug/invite/:token" element={<InvitePage />} />
+      <Route path="/app/:slug/reset/:token" element={<ResetPasswordPage />} />
+      <Route path="/app/:slug/reset" element={<ForgotPasswordPage />} />
+      <Route path="/app/:slug" element={
+        <SlugRoute
+          user={user}
+          loginData={loginData}
+          setLoginData={setLoginData}
+          loginError={loginError}
+          setLoginError={setLoginError}
+          handleLogin={handleLogin}
+          isRegistering={isRegistering}
+          setIsRegistering={setIsRegistering}
+          regData={regData}
+          setRegData={setRegData}
+          handleRegister={handleRegister}
+          authenticatedContent={authenticatedView}
+          settings={settings}
+          t={t}
+        />
       } />
-      
+      <Route path="/app" element={<Navigate to="/login" replace />} />
+
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
@@ -1668,3 +1698,249 @@ const MemberModals = ({ type, item, onClose, onSave, objectives, members, expens
     </Modal>
   );
 };
+
+// ─── Slug-aware route: /app/:slug ────────────────────────────────────────────
+interface SlugRouteProps {
+  user: User | null;
+  loginData: { associationId: string; username: string; password: string };
+  setLoginData: (d: any) => void;
+  loginError: string;
+  setLoginError: (e: string) => void;
+  handleLogin: (e: React.FormEvent) => Promise<void>;
+  isRegistering: boolean;
+  setIsRegistering: (v: boolean) => void;
+  regData: any;
+  setRegData: (d: any) => void;
+  handleRegister: (e: React.FormEvent) => Promise<void>;
+  authenticatedContent: React.ReactNode;
+  settings: Record<string, string>;
+  t: (key: any) => string;
+}
+
+function SlugRoute({
+  user,
+  loginData,
+  setLoginData,
+  loginError,
+  setLoginError,
+  handleLogin,
+  isRegistering,
+  setIsRegistering,
+  regData,
+  setRegData,
+  handleRegister,
+  authenticatedContent,
+  settings,
+  t,
+}: SlugRouteProps) {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (slug && loginData.associationId !== slug) {
+      setLoginData((prev: any) => ({ ...prev, associationId: slug }));
+    }
+  }, [slug]);
+
+  if (user && user.associationId === slug) {
+    return <>{authenticatedContent}</>;
+  }
+
+  if (user && user.associationId !== slug) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-6 font-sans">
+        <div className="bg-white p-10 rounded-[2rem] card-shadow w-full max-w-sm border border-slate-100 text-center">
+          <Shield className="w-10 h-10 text-brand-600 mx-auto mb-4" />
+          <h2 className="text-xl font-serif font-bold text-slate-900 mb-2">Wrong Association</h2>
+          <p className="text-sm text-slate-500 mb-6">
+            You are logged in to <strong>{user.associationId}</strong>. This page belongs to <strong>{slug}</strong>.
+          </p>
+          <button
+            onClick={() => navigate(`/app/${user.associationId}`)}
+            className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest transition-all"
+          >
+            Go to my association
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-6 transition-colors duration-300 font-sans">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="bg-white p-8 rounded-[2rem] card-shadow w-full max-w-sm border border-slate-100 relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50/50 rounded-full -mr-16 -mt-16 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-50/50 rounded-full -ml-16 -mb-16 blur-3xl" />
+
+        <div className="flex flex-col items-center mb-6 relative z-10">
+          <div className="bg-brand-600 p-3 rounded-xl mb-3 shadow-xl shadow-brand-100">
+            <Shield className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-2xl font-serif font-bold text-slate-900 text-center leading-tight">
+            {isRegistering ? 'Register Association' : (settings.app_name || slug || 'Association')}
+          </h2>
+          <div className="h-1 w-10 bg-brand-600 rounded-full mt-2 mb-1.5" />
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+            {isRegistering ? 'Create your platform account' : `Sign in · ${slug}`}
+          </p>
+        </div>
+
+        {!isRegistering ? (
+          <form onSubmit={handleLogin} className="space-y-3 relative z-10">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('username')}</label>
+              <div className="relative group">
+                <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
+                  placeholder={t('username')}
+                  value={loginData.username}
+                  onChange={e => setLoginData((prev: any) => ({ ...prev, username: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('password')}</label>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
+                <input
+                  type="password"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
+                  placeholder={t('password')}
+                  value={loginData.password}
+                  onChange={e => setLoginData((prev: any) => ({ ...prev, password: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            {loginError && (
+              <motion.p
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-xs text-red-500 font-bold text-center uppercase tracking-wider"
+              >
+                {loginError}
+              </motion.p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl transition-all shadow-xl shadow-brand-100 active:scale-[0.98] text-xs uppercase tracking-[0.2em] mt-1"
+            >
+              {t('signIn')}
+            </button>
+
+            <div className="flex flex-col items-center gap-2 mt-4">
+              <button
+                type="button"
+                onClick={() => { setLoginError(''); navigate(`/app/${slug}/reset`); }}
+                className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:text-brand-600 transition-colors"
+              >
+                Forgot password?
+              </button>
+              <button
+                type="button"
+                onClick={() => { setLoginError(''); setIsRegistering(true); }}
+                className="text-[10px] text-brand-600 font-bold uppercase tracking-widest hover:underline"
+              >
+                Register your association
+              </button>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={handleRegister} className="space-y-4 relative z-10">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Assoc ID</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
+                  placeholder="e.g. my-assoc"
+                  value={regData.id}
+                  onChange={e => setRegData((prev: any) => ({ ...prev, id: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Assoc Name</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
+                  placeholder="Association Name"
+                  value={regData.name}
+                  onChange={e => setRegData((prev: any) => ({ ...prev, name: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Username</label>
+              <input
+                type="text"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
+                placeholder="Admin Username"
+                value={regData.adminUsername}
+                onChange={e => setRegData((prev: any) => ({ ...prev, adminUsername: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Password</label>
+              <input
+                type="password"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
+                placeholder="Admin Password"
+                value={regData.adminPassword}
+                onChange={e => setRegData((prev: any) => ({ ...prev, adminPassword: e.target.value }))}
+              />
+            </div>
+
+            {loginError && (
+              <motion.p
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-xs text-red-500 font-bold text-center uppercase tracking-wider"
+              >
+                {loginError}
+              </motion.p>
+            )}
+
+            <button
+              type="submit"
+              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-brand-100 text-xs uppercase tracking-[0.2em] mt-4"
+            >
+              Create Association
+            </button>
+
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => { setLoginError(''); setIsRegistering(false); }}
+                className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:underline"
+              >
+                Back to Login
+              </button>
+            </div>
+          </form>
+        )}
+
+        <div className="mt-6 pt-4 border-t border-slate-50 text-center relative z-10">
+          <p className="text-[9px] text-slate-300 font-bold uppercase tracking-widest leading-relaxed">
+            Authorized access only.<br />Contact administrator for support.
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  );
+}

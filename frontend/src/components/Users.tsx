@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
-import { 
-  Shield, 
-  UserPlus, 
-  Trash2, 
-  Pencil, 
-  ShieldCheck, 
-  ShieldAlert, 
-  Eye 
+import {
+  Shield,
+  UserPlus,
+  Trash2,
+  Pencil,
+  ShieldCheck,
+  ShieldAlert,
+  Eye,
+  Link as LinkIcon,
+  Copy,
+  CheckCircle2,
+  X
 } from 'lucide-react';
 import { User } from '../types';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from '../lib/LanguageContext';
+import { cn } from '../lib/utils';
+import { insforge } from '../lib/insforge';
 
 interface UsersProps {
   users: User[];
@@ -20,8 +26,54 @@ interface UsersProps {
   currentUser: User | null;
 }
 
+function generateToken(): string {
+  const array = new Uint8Array(24);
+  crypto.getRandomValues(array);
+  return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 const Users: React.FC<UsersProps> = ({ users, onAddUser, onEditUser, onDeleteUser, currentUser }) => {
   const { t } = useLanguage();
+  const [inviteModal, setInviteModal] = useState(false);
+  const [inviteRole, setInviteRole] = useState<User['role']>('controller');
+  const [inviteLink, setInviteLink] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleGenerateInvite = async () => {
+    setGenerating(true);
+    try {
+      const token = generateToken();
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
+
+      await insforge.database.from('invites').insert({
+        token,
+        association_id: currentUser?.associationId,
+        role: inviteRole,
+        expires_at: expiresAt,
+        used: false,
+      });
+
+      const link = `${window.location.origin}/app/${currentUser?.associationId}/invite/${token}`;
+      setInviteLink(link);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const copyInviteLink = () => {
+    navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const closeInviteModal = () => {
+    setInviteModal(false);
+    setInviteLink('');
+    setCopied(false);
+    setInviteRole('controller');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-white p-6 rounded-3xl border border-slate-100 card-shadow">
@@ -29,13 +81,22 @@ const Users: React.FC<UsersProps> = ({ users, onAddUser, onEditUser, onDeleteUse
           <Shield className="w-6 h-6 text-brand-600" />
           {t('manageSystemUsers')}
         </h3>
-        <button
-          onClick={onAddUser}
-          className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-brand-100 transition-all"
-        >
-          <UserPlus className="w-4 h-4" />
-          {t('newUser')}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setInviteModal(true)}
+            className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all"
+          >
+            <LinkIcon className="w-4 h-4" />
+            Invite Link
+          </button>
+          <button
+            onClick={onAddUser}
+            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-8 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-brand-100 transition-all"
+          >
+            <UserPlus className="w-4 h-4" />
+            {t('newUser')}
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-3xl border border-slate-100 card-shadow overflow-hidden">
@@ -79,7 +140,6 @@ const Users: React.FC<UsersProps> = ({ users, onAddUser, onEditUser, onDeleteUse
                   </td>
                   <td className="px-8 py-5 text-right">
                     <div className="flex justify-end gap-1">
-                      {/* Only superadmins can edit other superadmins. Admins can edit admins and viewers. */}
                       {(currentUser?.role === 'superadmin' || (currentUser?.role === 'admin' && user.role !== 'superadmin')) && (
                         <button
                           onClick={() => onEditUser(user)}
@@ -89,8 +149,6 @@ const Users: React.FC<UsersProps> = ({ users, onAddUser, onEditUser, onDeleteUse
                           <Pencil className="w-4 h-4" />
                         </button>
                       )}
-                      
-                      {/* Cannot delete yourself. Only superadmins can delete anyone. Admins can delete admins and viewers. */}
                       {user.username !== currentUser?.username && (currentUser?.role === 'superadmin' || (currentUser?.role === 'admin' && user.role !== 'superadmin')) && (
                         <button
                           onClick={() => onDeleteUser(user.username)}
@@ -108,6 +166,89 @@ const Users: React.FC<UsersProps> = ({ users, onAddUser, onEditUser, onDeleteUse
           </table>
         </div>
       </div>
+
+      {/* Invite Link Modal */}
+      <AnimatePresence>
+        {inviteModal && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-[2rem] p-8 w-full max-w-md card-shadow border border-slate-100"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-serif font-bold text-slate-900">Generate Invite Link</h3>
+                <button onClick={closeInviteModal} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+                  <X className="w-5 h-5 text-slate-400" />
+                </button>
+              </div>
+
+              {!inviteLink ? (
+                <div className="space-y-6">
+                  <p className="text-sm text-slate-500 leading-relaxed">
+                    Generate a one-time invite link. The recipient opens it to create their own account with the selected role. Expires in 7 days.
+                  </p>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Role for new user</label>
+                    <select
+                      value={inviteRole}
+                      onChange={e => setInviteRole(e.target.value as User['role'])}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-sm font-medium text-slate-700"
+                    >
+                      <option value="admin">Admin</option>
+                      <option value="treasury">Treasury</option>
+                      <option value="controller">Controller</option>
+                      <option value="member">Member Portal</option>
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={handleGenerateInvite}
+                    disabled={generating}
+                    className="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest transition-all disabled:opacity-50"
+                  >
+                    <LinkIcon className="w-4 h-4" />
+                    {generating ? 'Generating...' : 'Generate Invite Link'}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-emerald-600">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span className="text-sm font-bold">Invite link ready!</span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Share this link with the person you want to invite. They'll choose their own username and password. Role: <strong className="text-slate-700">{inviteRole}</strong>
+                  </p>
+
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                    <p className="text-[10px] text-slate-500 break-all leading-relaxed font-mono">{inviteLink}</p>
+                  </div>
+
+                  <button
+                    onClick={copyInviteLink}
+                    className="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest transition-all"
+                  >
+                    {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    {copied ? 'Copied!' : 'Copy Link'}
+                  </button>
+
+                  <button
+                    onClick={closeInviteModal}
+                    className="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-3 rounded-xl text-xs uppercase tracking-widest transition-all"
+                  >
+                    Done
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -117,7 +258,5 @@ const UserIcon = ({ className }: { className?: string }) => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
   </svg>
 );
-
-import { cn } from '../lib/utils';
 
 export default Users;
