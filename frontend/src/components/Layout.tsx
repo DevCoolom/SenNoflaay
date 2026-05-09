@@ -196,12 +196,46 @@ const Layout: React.FC<LayoutProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <NotificationBell 
+            <NotificationBell
               notifications={notifications}
               onMarkRead={onMarkNotificationRead}
               onNavigate={onNavigate}
             />
-            <button 
+            <div className="relative">
+              <button
+                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                className="p-2 text-slate-400 hover:text-brand-600 transition-colors"
+              >
+                <Globe className="w-5 h-5" />
+              </button>
+              <AnimatePresence>
+                {isLangMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsLangMenuOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full right-0 mt-2 w-32 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-50 overflow-hidden card-shadow"
+                    >
+                      {languages.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => { setLanguage(lang.code); setIsLangMenuOpen(false); }}
+                          className={cn(
+                            "w-full text-left px-4 py-2 text-xs font-medium transition-colors",
+                            language === lang.code ? "bg-brand-50 text-brand-700" : "text-slate-600 hover:bg-brand-50/50"
+                          )}
+                        >
+                          {lang.label}
+                        </button>
+                      ))}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+            <button
               className="p-2 text-slate-400 hover:text-brand-600 transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
