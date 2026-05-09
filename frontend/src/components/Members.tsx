@@ -223,7 +223,7 @@ const Members: React.FC<MembersProps> = ({
                             {new Date(payment.date).toLocaleDateString()}
                           </td>
                           <td className="px-8 py-5">
-                            <span className="text-sm font-bold text-slate-900">{payment.objective_id}</span>
+                            <span className="text-sm font-bold text-slate-900">{payment.objectiveId}</span>
                           </td>
                           <td className="px-8 py-5 text-right">
                             <span className="font-serif font-bold text-lg text-slate-900">{formatCurrency(payment.amount)}</span>
@@ -371,9 +371,10 @@ const Members: React.FC<MembersProps> = ({
                           partiallyPaid: 'bg-amber-100 text-amber-700',
                           outstanding: 'bg-red-100 text-red-700'
                         };
+                        const labels = { paid: 'Paid', partiallyPaid: 'Partial', outstanding: 'Outstanding' };
                         return (
-                          <span className={`text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-tighter ${colors[status]}`}>
-                            {t(status)}
+                          <span className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${colors[status]}`}>
+                            {labels[status]}
                           </span>
                         );
                       })()}

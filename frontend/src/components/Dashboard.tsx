@@ -140,7 +140,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-2xl font-serif font-bold text-slate-900 shrink-0">{t('dashboard')}</h2>
           <div className="bg-brand-50 border border-brand-100 px-3 py-1.5 rounded-2xl flex items-center gap-1.5 min-w-0">
-            <span className="hidden sm:block text-[10px] font-bold text-brand-600 uppercase tracking-widest shrink-0">Association ID:</span>
+            <span className="hidden sm:block text-xs font-bold text-brand-600 uppercase tracking-widest shrink-0">Association ID:</span>
             <code className="text-xs font-mono font-bold text-brand-900 bg-white px-2 py-0.5 rounded border border-brand-100 truncate">{associationId || 'N/A'}</code>
           </div>
         </div>
@@ -161,10 +161,10 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className={stat.color + " w-12 h-12 rounded-2xl flex items-center justify-center mb-4 text-white shadow-lg shadow-brand-100 group-hover:scale-110 transition-transform"}>
               <stat.icon className="w-6 h-6" />
             </div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-            <p className="text-xl font-serif font-bold text-slate-900">{stat.value}</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+            <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
             <div className="mt-4 flex items-center gap-1.5">
-              <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", stat.trendColor)}>
+              <span className={cn("text-xs font-bold px-2 py-1 rounded-full", stat.trendColor)}>
                 {stat.trend}
               </span>
             </div>
@@ -227,20 +227,20 @@ const Dashboard: React.FC<DashboardProps> = ({
                   </div>
                   <h3 className="font-serif font-bold text-slate-900">{t('events')}</h3>
                 </div>
-                <span className="bg-amber-50 text-amber-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-amber-50 text-amber-600 text-xs font-bold px-2 py-1 rounded-full">
                   {upcomingEvents} {t('upcomingPastEvents').split('&')[0]}
                 </span>
               </div>
               <div className="space-y-4">
                 {events.slice(0, 3).map(event => (
                   <div key={event.id} className="flex items-center gap-4 p-3 rounded-2xl hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => setActiveTab('events')}>
-                    <div className="bg-slate-100 w-10 h-10 rounded-xl flex flex-col items-center justify-center text-[10px] font-bold text-slate-500">
-                      <span>{new Date(event.date).getDate()}</span>
+                    <div className="bg-slate-100 w-12 h-12 rounded-xl flex flex-col items-center justify-center text-xs font-bold text-slate-500">
+                      <span className="text-sm">{new Date(event.date).getDate()}</span>
                       <span className="uppercase">{new Date(event.date).toLocaleString('default', { month: 'short' })}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-slate-900 truncate">{event.name}</p>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wider">{event.place}</p>
+                      <p className="text-xs text-slate-400 uppercase tracking-wider">{event.place}</p>
                     </div>
                   </div>
                 ))}
@@ -256,7 +256,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   </div>
                   <h3 className="font-serif font-bold text-slate-900">{t('tasks')}</h3>
                 </div>
-                <span className="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-emerald-50 text-emerald-600 text-xs font-bold px-2 py-1 rounded-full">
                   {activeTasks} {t('todo')}
                 </span>
               </div>
@@ -286,7 +286,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   className="flex flex-col items-center justify-center gap-3 p-4 bg-white/10 hover:bg-white/20 rounded-[2rem] transition-all group"
                 >
                   <action.icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-center">{action.label}</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-center">{action.label}</span>
                 </button>
               ))}
             </div>
@@ -310,9 +310,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <Clock className="w-3 h-3 text-slate-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-slate-900">{log.action}</p>
-                    <p className="text-[10px] text-slate-400 truncate">{log.details}</p>
-                    <p className="text-[9px] text-slate-300 mt-1 uppercase font-bold tracking-tighter">
+                    <p className="text-sm font-bold text-slate-900">{log.action}</p>
+                    <p className="text-xs text-slate-400 truncate">{log.details}</p>
+                    <p className="text-xs text-slate-300 mt-1 uppercase font-bold tracking-tighter">
                       {new Date(log.timestamp).toLocaleString()}
                     </p>
                   </div>
