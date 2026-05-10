@@ -49,9 +49,13 @@ const Fundraising: React.FC<FundraisingProps> = ({
   const totalGoal = campaigns.reduce((sum, c) => sum + c.goalAmount, 0);
   const activeCampaignsCount = campaigns.filter(c => c.status === 'active').length;
 
-  const copyDonationLink = (campaignId: string) => {
+  const copyDonationLink = async (campaignId: string) => {
     const url = `${window.location.origin}/donate/${associationId}?campaign=${campaignId}`;
-    navigator.clipboard.writeText(url);
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // clipboard may fail on non-HTTPS; fall back silently
+    }
     alert(t('linkCopied'));
   };
 
@@ -131,12 +135,11 @@ const Fundraising: React.FC<FundraisingProps> = ({
             {campaigns.length > 0 ? campaigns.map(campaign => {
               const progress = Math.min(100, Math.round(((campaign.currentAmount || 0) / campaign.goalAmount) * 100));
               return (
-                <motion.div 
-                  layout
+                <div
                   key={campaign.id}
-                  className="border border-slate-100 rounded-3xl p-6 hover:shadow-md transition-shadow group relative overflow-hidden"
+                  className="border border-slate-100 rounded-3xl p-6 hover:shadow-md transition-shadow group relative"
                 >
-                  <div className="absolute top-0 right-0 p-4 flex gap-2">
+                  <div className="absolute top-0 right-0 p-4 flex gap-2 z-10">
                     <button 
                       onClick={() => copyDonationLink(campaign.id)}
                       className="p-2 bg-white text-slate-400 hover:text-brand-600 rounded-full shadow-sm border border-slate-100 transition-colors"
@@ -197,7 +200,7 @@ const Fundraising: React.FC<FundraisingProps> = ({
                       {progress}% Funded
                     </div>
                   </div>
-                </motion.div>
+                </div>
               );
             }) : (
               <div className="col-span-full py-20 text-center text-slate-500 italic">
