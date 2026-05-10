@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings as SettingsIcon, Image as ImageIcon, Type, Save, DollarSign, Calendar, Users } from 'lucide-react';
+import { Settings as SettingsIcon, Image as ImageIcon, Type, Save, DollarSign, Calendar, Users, FileText, Mail, Hash } from 'lucide-react';
 import { FormField, Input, Select } from './Modals';
 import { useLanguage } from '../lib/LanguageContext';
 import { MembershipFeeConfig } from '../types';
@@ -15,6 +15,9 @@ const Settings: React.FC<SettingsProps> = ({ settings, onUpdateSetting, membersh
   const { t } = useLanguage();
   const [logoUrl, setLogoUrl] = useState(settings.logo_url || '');
   const [appName, setAppName] = useState(settings.app_name || '');
+  const [assocAddress, setAssocAddress] = useState(settings.association_address || '');
+  const [assocEmail, setAssocEmail] = useState(settings.association_email || '');
+  const [assocTaxId, setAssocTaxId] = useState(settings.association_tax_id || '');
   const [feeConfig, setFeeConfig] = useState<Omit<MembershipFeeConfig, 'associationId'>>({
     frequency: 'yearly',
     period: 'yearly',
@@ -49,6 +52,9 @@ const Settings: React.FC<SettingsProps> = ({ settings, onUpdateSetting, membersh
   const handleSave = () => {
     onUpdateSetting('logo_url', logoUrl);
     onUpdateSetting('app_name', appName);
+    onUpdateSetting('association_address', assocAddress);
+    onUpdateSetting('association_email', assocEmail);
+    onUpdateSetting('association_tax_id', assocTaxId);
     setShowAppConfirmation(true);
     setTimeout(() => setShowAppConfirmation(false), 3000);
     handleSaveFeeConfig();
@@ -231,6 +237,69 @@ const Settings: React.FC<SettingsProps> = ({ settings, onUpdateSetting, membersh
           )}
           <button
             onClick={handleSaveFeeConfig}
+            className="flex items-center gap-3 bg-brand-600 hover:bg-brand-700 text-white px-10 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-brand-100 active:scale-[0.98]"
+          >
+            <Save className="w-5 h-5" />
+            {t('saveSettings')}
+          </button>
+        </div>
+      </div>
+
+      {/* Receipt & Legal Info */}
+      <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 card-shadow space-y-8 transition-colors">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 bg-brand-50 rounded-xl">
+            <FileText className="w-5 h-5 text-brand-600" />
+          </div>
+          <div>
+            <h3 className="text-xl font-serif font-bold text-slate-900">Receipt & Legal Info</h3>
+            <p className="text-xs text-slate-400 mt-1">Shown on tax receipts for members and donors. All fields are optional.</p>
+          </div>
+        </div>
+
+        <FormField label="Association Address">
+          <textarea
+            rows={2}
+            className="w-full px-4 py-3 rounded-2xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-sm font-medium resize-none"
+            value={assocAddress}
+            onChange={e => setAssocAddress(e.target.value)}
+            placeholder="123 Main St, City, Country"
+          />
+        </FormField>
+
+        <FormField label="Association Email">
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+            <Input
+              type="email"
+              className="pl-12"
+              value={assocEmail}
+              onChange={e => setAssocEmail(e.target.value)}
+              placeholder="contact@myassociation.org"
+            />
+          </div>
+        </FormField>
+
+        <FormField label="Tax / Registration No.">
+          <div className="relative">
+            <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+            <Input
+              className="pl-12"
+              value={assocTaxId}
+              onChange={e => setAssocTaxId(e.target.value)}
+              placeholder="e.g. VR 12345"
+            />
+          </div>
+        </FormField>
+
+        <div className="pt-8 flex items-center justify-end gap-4">
+          {showAppConfirmation && (
+            <p className="text-sm font-bold text-emerald-600 uppercase tracking-widest">
+              {t('settingsSaved')}
+            </p>
+          )}
+          <button
+            onClick={handleSave}
             className="flex items-center gap-3 bg-brand-600 hover:bg-brand-700 text-white px-10 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-brand-100 active:scale-[0.98]"
           >
             <Save className="w-5 h-5" />

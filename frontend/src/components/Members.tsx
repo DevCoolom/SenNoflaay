@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { 
-  Search, 
-  Plus, 
-  Eye, 
-  DollarSign, 
-  Pencil, 
+import {
+  Search,
+  Plus,
+  Eye,
+  DollarSign,
+  Pencil,
   Trash2,
   Phone,
   User as UserIcon,
-  FileSpreadsheet
+  FileSpreadsheet,
+  FileText
 } from 'lucide-react';
-import { Member, MembershipFeeConfig } from '../types';
+import { Member, MembershipFeeConfig, Objective } from '../types';
 import { formatCurrency, getInitials } from '../lib/utils';
+import { exportReceiptPDF } from '../lib/export';
 import { motion } from 'motion/react';
 import { useLanguage } from '../lib/LanguageContext';
 
@@ -27,25 +29,42 @@ interface MembersProps {
   canAdd: boolean;
   canEdit: boolean;
   canDelete: boolean;
+  settings?: Record<string, string>;
+  objectives?: Objective[];
 }
 
-const Members: React.FC<MembersProps> = ({ 
-  members, 
+const Members: React.FC<MembersProps> = ({
+  members,
   membershipFeeConfig,
-  onAddMember, 
+  onAddMember,
   onImportMember,
-  onEditMember, 
-  onDeleteMember, 
+  onEditMember,
+  onDeleteMember,
   onViewDetails,
   onAddPayment,
   canAdd,
   canEdit,
-  canDelete 
+  canDelete,
+  settings = {} as Record<string, string>,
+  objectives = [] as Objective[],
 }) => {
   const { t } = useLanguage();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [receiptYear, setReceiptYear] = useState(new Date().getFullYear());
+  const [receiptMonth, setReceiptMonth] = useState(new Date().getMonth());
+  const [receiptMonthYear, setReceiptMonthYear] = useState(new Date().getFullYear());
+
+  React.useEffect(() => {
+    if (selectedMember) {
+      const years = (Array.from(new Set(selectedMember.payments.map(p => new Date(p.date).getFullYear()))) as number[]).sort((a, b) => b - a);
+      if (years.length > 0) {
+        setReceiptYear(years[0]);
+        setReceiptMonthYear(years[0]);
+      }
+    }
+  }, [selectedMember?.id]);
 
   const getMemberTargetFee = (member: Member) => {
     if (!membershipFeeConfig) return member.fee;
@@ -99,6 +118,22 @@ const Members: React.FC<MembersProps> = ({
   }, 0);
 
   if (selectedMember) {
+    const paymentYears = (Array.from(new Set(selectedMember.payments.map(p => new Date(p.date).getFullYear()))) as number[]).sort((a, b) => b - a);
+    const yearOptions = paymentYears.length > 0 ? paymentYears : [currentYear];
+
+    const buildReceiptRows = (year: number, month?: number) =>
+      selectedMember.payments
+        .filter(p => {
+          const d = new Date(p.date);
+          return d.getFullYear() === year && (month === undefined || d.getMonth() === month);
+        })
+        .map(p => ({
+          date: new Date(p.date).toLocaleDateString(),
+          description: objectives.find(o => o.id === p.objectiveId)?.name || p.objectiveId,
+          amount: p.amount,
+          method: p.method,
+        }));
+
     const memberPayments = [...selectedMember.payments].sort((a, b) => {
       const dateA = a.date ? new Date(a.date).getTime() : 0;
       const dateB = b.date ? new Date(b.date).getTime() : 0;
@@ -240,6 +275,98 @@ const Members: React.FC<MembersProps> = ({
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tax Receipt Downloads */}
+        <div className="bg-white rounded-3xl border border-slate-100 card-shadow overflow-hidden">
+          <div className="px-8 py-6 border-b border-slate-50 bg-slate-50/30 flex items-center gap-3">
+            <div className="p-2 bg-brand-50 rounded-xl">
+              <FileText className="w-5 h-5 text-brand-600" />
+            </div>
+            <div>
+              <h3 className="font-serif font-bold text-xl text-slate-900">Tax Receipts</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Download contribution receipts for tax declaration</p>
+            </div>
+          </div>
+          <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Annual */}
+            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 space-y-4">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Annual Receipt</p>
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Year</label>
+                <select
+                  value={receiptYear}
+                  onChange={e => setReceiptYear(Number(e.target.value))}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-100 bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-sm font-medium"
+                >
+                  {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
+              <button
+                onClick={() => exportReceiptPDF({
+                  recipientName: `${selectedMember.firstName} ${selectedMember.lastName}`,
+                  recipientCity: selectedMember.city,
+                  receiptType: 'membership',
+                  period: { type: 'year', year: receiptYear },
+                  rows: buildReceiptRows(receiptYear),
+                  associationName: settings.app_name || 'Association',
+                  associationAddress: settings.association_address,
+                  associationEmail: settings.association_email,
+                  associationTaxId: settings.association_tax_id,
+                })}
+                className="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-brand-100 active:scale-[0.98]"
+              >
+                <FileText className="w-4 h-4" />
+                Download Annual Receipt
+              </button>
+            </div>
+
+            {/* Monthly */}
+            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 space-y-4">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Monthly Receipt</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Month</label>
+                  <select
+                    value={receiptMonth}
+                    onChange={e => setReceiptMonth(Number(e.target.value))}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-100 bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-sm font-medium"
+                  >
+                    {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => (
+                      <option key={i} value={i}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Year</label>
+                  <select
+                    value={receiptMonthYear}
+                    onChange={e => setReceiptMonthYear(Number(e.target.value))}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-100 bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-sm font-medium"
+                  >
+                    {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                </div>
+              </div>
+              <button
+                onClick={() => exportReceiptPDF({
+                  recipientName: `${selectedMember.firstName} ${selectedMember.lastName}`,
+                  recipientCity: selectedMember.city,
+                  receiptType: 'membership',
+                  period: { type: 'month', year: receiptMonthYear, month: receiptMonth },
+                  rows: buildReceiptRows(receiptMonthYear, receiptMonth),
+                  associationName: settings.app_name || 'Association',
+                  associationAddress: settings.association_address,
+                  associationEmail: settings.association_email,
+                  associationTaxId: settings.association_tax_id,
+                })}
+                className="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-brand-100 active:scale-[0.98]"
+              >
+                <FileText className="w-4 h-4" />
+                Download Monthly Receipt
+              </button>
             </div>
           </div>
         </div>

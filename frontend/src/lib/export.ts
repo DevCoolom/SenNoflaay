@@ -118,3 +118,113 @@ export const exportFundraisingReportPDF = (
 
   doc.save(`Fundraising_Report_${objectiveName.replace(/\s+/g, '_')}.pdf`);
 };
+
+export const exportReceiptPDF = (opts: {
+  recipientName: string;
+  recipientCity?: string;
+  recipientEmail?: string;
+  receiptType: 'membership' | 'donation';
+  period: { type: 'year'; year: number } | { type: 'month'; year: number; month: number };
+  rows: { date: string; description: string; amount: number; method?: string }[];
+  associationName: string;
+  associationAddress?: string;
+  associationEmail?: string;
+  associationTaxId?: string;
+}) => {
+  const {
+    recipientName, recipientCity, recipientEmail,
+    receiptType, period, rows,
+    associationName, associationAddress, associationEmail, associationTaxId,
+  } = opts;
+
+  const doc = new jsPDF();
+  const BRAND: [number, number, number] = [13, 148, 136];
+  const SLATE: [number, number, number] = [100, 116, 139];
+  const DARK: [number, number, number] = [15, 23, 42];
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  const periodLabel = period.type === 'year'
+    ? `Annual — ${period.year}`
+    : `${MONTH_NAMES[period.month]} ${period.year}`;
+
+  const titleText = receiptType === 'membership'
+    ? 'MEMBERSHIP CONTRIBUTION RECEIPT'
+    : 'DONATION RECEIPT';
+
+  // Association header
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...BRAND);
+  doc.text(associationName, 14, 20);
+
+  let y = 28;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...SLATE);
+  if (associationAddress) { doc.text(associationAddress, 14, y); y += 6; }
+  if (associationEmail) { doc.text(`Email: ${associationEmail}`, 14, y); y += 6; }
+  if (associationTaxId) { doc.text(`Tax / Reg. No.: ${associationTaxId}`, 14, y); y += 6; }
+
+  doc.setDrawColor(...BRAND);
+  doc.setLineWidth(0.5);
+  doc.line(14, y + 3, 196, y + 3);
+  y += 12;
+
+  // Receipt title
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...DARK);
+  doc.text(titleText, 14, y);
+  y += 10;
+
+  // Metadata
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...SLATE);
+  const receiptNo = `RCP-${Date.now().toString().slice(-8)}`;
+  doc.text(`Receipt No.: ${receiptNo}`, 14, y);
+  doc.text(`Issue Date: ${new Date().toLocaleDateString()}`, 110, y);
+  y += 6;
+  doc.text(`Period: ${periodLabel}`, 14, y);
+  y += 12;
+
+  // Recipient block
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...DARK);
+  doc.text('Issued to:', 14, y);
+  y += 6;
+  doc.setFont('helvetica', 'normal');
+  doc.text(recipientName, 14, y);
+  if (recipientCity) { y += 5; doc.text(recipientCity, 14, y); }
+  if (recipientEmail) { y += 5; doc.text(recipientEmail, 14, y); }
+  y += 10;
+
+  // Payments table
+  autoTable(doc, {
+    startY: y,
+    head: [['Date', 'Description', 'Method', 'Amount']],
+    body: rows.length > 0
+      ? rows.map(r => [r.date, r.description, r.method || '—', formatCurrency(r.amount)])
+      : [['—', 'No contributions recorded for this period', '—', '—']],
+    foot: rows.length > 0
+      ? [['', '', 'TOTAL', formatCurrency(rows.reduce((s, r) => s + r.amount, 0))]]
+      : undefined,
+    theme: 'striped',
+    headStyles: { fillColor: BRAND },
+    footStyles: { fontStyle: 'bold', fillColor: [241, 245, 249] as [number, number, number] },
+    columnStyles: { 3: { halign: 'right' } },
+  });
+
+  const finalY = (doc as any).lastAutoTable.finalY + 14;
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(...SLATE);
+  doc.text('This document confirms the above contribution for tax declaration purposes.', 14, finalY);
+
+  const safeName = recipientName.replace(/\s+/g, '_');
+  const safePeriod = period.type === 'year'
+    ? `${period.year}`
+    : `${MONTH_NAMES[period.month]}_${period.year}`;
+  doc.save(`Receipt_${safeName}_${safePeriod}.pdf`);
+};

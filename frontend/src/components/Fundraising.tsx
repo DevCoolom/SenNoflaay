@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  Heart, 
-  Target, 
-  TrendingUp, 
-  Users, 
-  Plus, 
-  Pencil, 
+import {
+  Heart,
+  Target,
+  TrendingUp,
+  Users,
+  Plus,
+  Pencil,
   Trash2,
   Calendar as CalendarIcon,
-  Link as LinkIcon
+  Link as LinkIcon,
+  FileText
 } from 'lucide-react';
+import { exportReceiptPDF } from '../lib/export';
 import { Campaign, Donation } from '../types';
 import { formatCurrency, cn } from '../lib/utils';
 import { motion } from 'motion/react';
@@ -22,18 +24,26 @@ interface FundraisingProps {
   onEditCampaign: (campaign: Campaign) => void;
   onDeleteCampaign: (id: string) => void;
   associationId: string | null;
+  settings?: Record<string, string>;
 }
 
-const Fundraising: React.FC<FundraisingProps> = ({ 
-  campaigns, 
-  donations, 
-  onAddCampaign, 
-  onEditCampaign, 
+const Fundraising: React.FC<FundraisingProps> = ({
+  campaigns,
+  donations,
+  onAddCampaign,
+  onEditCampaign,
   onDeleteCampaign,
-  associationId
+  associationId,
+  settings = {} as Record<string, string>,
 }) => {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'campaigns' | 'donations'>('campaigns');
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  const [selectedDonor, setSelectedDonor] = useState('');
+  const [donorReceiptYear, setDonorReceiptYear] = useState(currentYear);
+  const [donorReceiptMonth, setDonorReceiptMonth] = useState(currentMonth);
+  const [donorReceiptMonthYear, setDonorReceiptMonthYear] = useState(currentYear);
 
   const totalRaised = campaigns.reduce((sum, c) => sum + (c.currentAmount || 0), 0);
   const totalGoal = campaigns.reduce((sum, c) => sum + c.goalAmount, 0);
@@ -242,6 +252,146 @@ const Fundraising: React.FC<FundraisingProps> = ({
           </div>
         )}
       </div>
+
+      {/* Donor Tax Receipts */}
+      {activeTab === 'donations' && (() => {
+        const uniqueDonors = Array.from(new Set(donations.filter(d => !d.isAnonymous).map(d => d.donorName))).sort();
+        const donorDonations = selectedDonor ? donations.filter(d => d.donorName === selectedDonor) : [];
+        const donorYears = (Array.from(new Set(donorDonations.map(d => new Date(d.date).getFullYear()))) as number[]).sort((a, b) => b - a);
+        const donorYearOptions = donorYears.length > 0 ? donorYears : [currentYear];
+        const donorEmail = donorDonations.find(d => d.donorEmail)?.donorEmail;
+
+        const buildDonorRows = (year: number, month?: number) =>
+          donorDonations
+            .filter(d => {
+              const dt = new Date(d.date);
+              return dt.getFullYear() === year && (month === undefined || dt.getMonth() === month);
+            })
+            .map(d => ({
+              date: new Date(d.date).toLocaleDateString(),
+              description: campaigns.find(c => c.id === d.campaignId)?.title || 'Donation',
+              amount: d.amount,
+            }));
+
+        return (
+          <div className="bg-white rounded-3xl border border-slate-100 card-shadow overflow-hidden">
+            <div className="px-8 py-6 border-b border-slate-50 bg-slate-50/30 flex items-center gap-3">
+              <div className="p-2 bg-brand-50 rounded-xl">
+                <FileText className="w-5 h-5 text-brand-600" />
+              </div>
+              <div>
+                <h3 className="font-serif font-bold text-xl text-slate-900">Donor Tax Receipts</h3>
+                <p className="text-xs text-slate-400 mt-0.5">Generate receipts for individual donors for tax declaration</p>
+              </div>
+            </div>
+            <div className="p-8 space-y-6">
+              {uniqueDonors.length === 0 ? (
+                <p className="text-sm text-slate-400 italic text-center py-4">No named donors available.</p>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select Donor</label>
+                    <select
+                      value={selectedDonor}
+                      onChange={e => {
+                        setSelectedDonor(e.target.value);
+                        const years = (Array.from(new Set(donations.filter(d => d.donorName === e.target.value).map(d => new Date(d.date).getFullYear()))) as number[]).sort((a, b) => b - a);
+                        if (years.length > 0) { setDonorReceiptYear(years[0]); setDonorReceiptMonthYear(years[0]); }
+                      }}
+                      className="w-full max-w-sm px-4 py-2.5 rounded-xl border border-slate-100 bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-sm font-medium"
+                    >
+                      <option value="">— Select a donor —</option>
+                      {uniqueDonors.map(name => <option key={name} value={name}>{name}</option>)}
+                    </select>
+                  </div>
+
+                  {selectedDonor && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                      {/* Annual */}
+                      <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 space-y-4">
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Annual Receipt</p>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Year</label>
+                          <select
+                            value={donorReceiptYear}
+                            onChange={e => setDonorReceiptYear(Number(e.target.value))}
+                            className="w-full px-4 py-2.5 rounded-xl border border-slate-100 bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-sm font-medium"
+                          >
+                            {donorYearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                          </select>
+                        </div>
+                        <button
+                          onClick={() => exportReceiptPDF({
+                            recipientName: selectedDonor,
+                            recipientEmail: donorEmail,
+                            receiptType: 'donation',
+                            period: { type: 'year', year: donorReceiptYear },
+                            rows: buildDonorRows(donorReceiptYear),
+                            associationName: settings.app_name || 'Association',
+                            associationAddress: settings.association_address,
+                            associationEmail: settings.association_email,
+                            associationTaxId: settings.association_tax_id,
+                          })}
+                          className="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-brand-100 active:scale-[0.98]"
+                        >
+                          <FileText className="w-4 h-4" />
+                          Download Annual Receipt
+                        </button>
+                      </div>
+
+                      {/* Monthly */}
+                      <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 space-y-4">
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Monthly Receipt</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Month</label>
+                            <select
+                              value={donorReceiptMonth}
+                              onChange={e => setDonorReceiptMonth(Number(e.target.value))}
+                              className="w-full px-3 py-2.5 rounded-xl border border-slate-100 bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-sm font-medium"
+                            >
+                              {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => (
+                                <option key={i} value={i}>{m}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Year</label>
+                            <select
+                              value={donorReceiptMonthYear}
+                              onChange={e => setDonorReceiptMonthYear(Number(e.target.value))}
+                              className="w-full px-3 py-2.5 rounded-xl border border-slate-100 bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all text-sm font-medium"
+                            >
+                              {donorYearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => exportReceiptPDF({
+                            recipientName: selectedDonor,
+                            recipientEmail: donorEmail,
+                            receiptType: 'donation',
+                            period: { type: 'month', year: donorReceiptMonthYear, month: donorReceiptMonth },
+                            rows: buildDonorRows(donorReceiptMonthYear, donorReceiptMonth),
+                            associationName: settings.app_name || 'Association',
+                            associationAddress: settings.association_address,
+                            associationEmail: settings.association_email,
+                            associationTaxId: settings.association_tax_id,
+                          })}
+                          className="w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-2xl font-bold text-xs uppercase tracking-widest transition-all shadow-lg shadow-brand-100 active:scale-[0.98]"
+                        >
+                          <FileText className="w-4 h-4" />
+                          Download Monthly Receipt
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };

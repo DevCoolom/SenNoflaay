@@ -521,9 +521,11 @@ function AppContent() {
       )}
 
       {activeTab === 'members' && (
-        <Members 
+        <Members
           members={members}
           membershipFeeConfig={membershipFeeConfig}
+          settings={settings}
+          objectives={objectives}
           canAdd={canAdd}
           canEdit={canEdit}
           canDelete={canDelete}
@@ -632,6 +634,7 @@ function AppContent() {
           campaigns={campaigns}
           donations={donations}
           associationId={user?.associationId || null}
+          settings={settings}
           onAddCampaign={() => { setSelectedItem(null); setModalType('campaign'); }}
           onEditCampaign={(c) => { setSelectedItem(c); setModalType('campaign'); }}
           onDeleteCampaign={(id) => {
