@@ -40,7 +40,7 @@ import FeaturesPage from './marketing/Features';
 import Pricing from './marketing/Pricing';
 import Security from './marketing/Security';
 import FAQ from './marketing/FAQ';
-import Demo from './marketing/Demo';
+import DemoApp from './demo/DemoApp';
 import Support from './marketing/Support';
 
 function ScrollToTop() {
@@ -137,6 +137,10 @@ function AppContent() {
   const [searchParams] = useSearchParams();
   const [isRegistering, setIsRegistering] = useState(searchParams.get('register') === 'true');
   const [regData, setRegData] = useState({ id: '', name: '', adminUsername: '', adminPassword: '' });
+
+  useEffect(() => {
+    if (searchParams.get('register') === 'true') setIsRegistering(true);
+  }, [searchParams]);
 
   // Modal states
   const [modalType, setModalType] = useState<string | null>(null);
@@ -842,7 +846,7 @@ function AppContent() {
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/security" element={<Security />} />
       <Route path="/faq" element={<FAQ />} />
-      <Route path="/demo" element={<Demo />} />
+      <Route path="/demo" element={<DemoApp />} />
       <Route path="/support" element={<Support />} />
 
       <Route path="/login" element={user ? <Navigate to={`/app/${user.associationId}`} /> : loginView} />

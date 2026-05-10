@@ -239,10 +239,11 @@ const Home: React.FC = () => {
       <section className="py-12 px-6 bg-white">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 mb-16">Simple plans for every size.</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <PricingTeaserCard title="Starter" price="$0" feat="Up to 50 members" />
-            <PricingTeaserCard title="Pro" price="$29" feat="Unlimited members" popular />
-            <PricingTeaserCard title="Elite" price="$99" feat="Custom branding" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+            <PricingTeaserCard title="Free" price="€0" feat="Up to 30 members" />
+            <PricingTeaserCard title="Pro" price="€7" feat="Up to 200 members" />
+            <PricingTeaserCard title="Pro Max" price="€29" feat="Unlimited members" popular />
+            <PricingTeaserCard title="Enterprise" price="€49" feat="SSO & API access" />
           </div>
           <Link to="/pricing" className="text-brand-600 font-bold uppercase tracking-widest hover:underline">View full pricing details →</Link>
         </div>
