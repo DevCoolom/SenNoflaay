@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Shield, Lock, User as UserIcon, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Shield, Lock, Mail, CheckCircle2, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
-import { insforge } from '../lib/insforge';
-import { hashPassword } from '../lib/crypto';
+import { insforge, supabase } from '../lib/insforge';
+
+type Status = 'loading' | 'valid' | 'invalid' | 'pending-email';
 
 export default function InvitePage() {
   const { slug, token } = useParams<{ slug: string; token: string }>();
   const navigate = useNavigate();
 
   const [invite, setInvite] = useState<any>(null);
-  const [status, setStatus] = useState<'loading' | 'valid' | 'invalid' | 'success'>('loading');
-  const [username, setUsername] = useState('');
+  const [status, setStatus] = useState<Status>('loading');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,9 +29,7 @@ export default function InvitePage() {
         .maybeSingle();
 
       if (error || !data) { setStatus('invalid'); return; }
-
-      const isExpired = new Date(data.expires_at) < new Date();
-      if (isExpired) { setStatus('invalid'); return; }
+      if (new Date(data.expires_at) < new Date()) { setStatus('invalid'); return; }
 
       setInvite(data);
       setStatus('valid');
@@ -46,34 +45,19 @@ export default function InvitePage() {
 
     setSubmitting(true);
     try {
-      const capitalizedUsername = username.charAt(0).toUpperCase() + username.slice(1);
-      const hashedPassword = await hashPassword(password);
-
-      const { data: existing } = await insforge.database
-        .from('users')
-        .select('username')
-        .eq('association_id', slug)
-        .eq('username', capitalizedUsername)
-        .maybeSingle();
-
-      if (existing) { setError('Username already taken. Choose another.'); setSubmitting(false); return; }
-
-      const { error: insertError } = await insforge.database.from('users').insert({
-        username: capitalizedUsername,
-        association_id: slug,
-        password: hashedPassword,
-        role: invite.role,
-        member_id: invite.member_id || null,
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            invite_token: token,
+            invite_association_id: slug,
+          },
+        },
       });
-
-      if (insertError) throw insertError;
-
-      await insforge.database
-        .from('invites')
-        .update({ used: true })
-        .eq('token', token);
-
-      setStatus('success');
+      if (error) throw error;
+      setStatus('pending-email');
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -112,19 +96,15 @@ export default function InvitePage() {
           </div>
         )}
 
-        {status === 'success' && (
+        {status === 'pending-email' && (
           <div className="text-center py-4">
-            <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+            <div className="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Mail className="w-7 h-7 text-brand-600" />
             </div>
-            <h2 className="text-xl font-serif font-bold text-slate-900 mb-2">Account Created!</h2>
-            <p className="text-sm text-slate-500 mb-6">Your account has been set up. You can now sign in.</p>
-            <button
-              onClick={() => navigate(`/app/${slug}`)}
-              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl text-xs uppercase tracking-widest transition-all"
-            >
-              Go to Login
-            </button>
+            <h2 className="text-xl font-serif font-bold text-slate-900 mb-2">Check Your Email</h2>
+            <p className="text-sm text-slate-500 mb-2">We sent a confirmation link to</p>
+            <p className="text-sm font-bold text-brand-600 mb-4">{email}</p>
+            <p className="text-xs text-slate-400">Click the link to complete your account setup and join the association.</p>
           </div>
         )}
 
@@ -136,23 +116,23 @@ export default function InvitePage() {
               </div>
               <h2 className="text-2xl font-serif font-bold text-slate-900 text-center">You're Invited!</h2>
               <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">
-                Set up your account · <span className="text-brand-600">{invite?.role}</span>
+                Create your account · <span className="text-brand-600">{invite?.role}</span>
               </p>
             </div>
 
             <form onSubmit={handleClaim} className="space-y-3">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Username</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
                 <div className="relative group">
-                  <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
                   <input
-                    type="text"
+                    type="email"
                     required
                     autoFocus
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
-                    placeholder="Choose a username"
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
                   />
                 </div>
               </div>
@@ -165,7 +145,7 @@ export default function InvitePage() {
                     type="password"
                     required
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
-                    placeholder="Create a password"
+                    placeholder="Min 6 characters"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                   />
@@ -180,7 +160,7 @@ export default function InvitePage() {
                     type="password"
                     required
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
-                    placeholder="Confirm your password"
+                    placeholder="Repeat password"
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                   />

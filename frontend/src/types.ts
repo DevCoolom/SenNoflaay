@@ -91,7 +91,9 @@ export interface User {
   associationId: string;
   password?: string;
   role: 'superadmin' | 'admin' | 'treasury' | 'controller' | 'member';
-  memberId?: string; // links to Member.id for member-role users
+  memberId?: string;
+  email?: string;
+  authId?: string;
 }
 
 export interface AuditLog {

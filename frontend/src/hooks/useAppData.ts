@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppNotification, Member, Objective, Expense, Event, Correction, Bill, User, AuditLog, Payment, Task, MembershipFeeConfig, Campaign, Donation } from '../types';
 import { insforge } from '../lib/insforge';
-import { hashPassword } from '../lib/crypto';
+// hashPassword removed — auth is now handled by Supabase Auth
 
 const STALE_TIME = 30_000;
 
@@ -368,13 +368,13 @@ export const useAppData = (associationId: string | null) => {
 
   const addUser = async (user: Omit<User, 'associationId'>) => {
     if (!associationId) return;
-    const hashedPw = await hashPassword(user.password);
     const { error } = await insforge.database.from('users').insert({
       username: user.username,
       association_id: associationId,
-      password: hashedPw,
+      email: user.email || null,
       role: user.role,
-      member_id: user.memberId || null
+      member_id: user.memberId || null,
+      auth_id: user.authId || null,
     });
     if (error) throw error;
     await invalidate();
@@ -382,12 +382,10 @@ export const useAppData = (associationId: string | null) => {
 
   const updateUser = async (username: string, user: Partial<User>) => {
     if (!associationId) return;
-    const updateData: any = { role: user.role, member_id: user.memberId || null };
-    if (user.password) {
-      updateData.password = await hashPassword(user.password);
-    }
-    const { error } = await insforge.database.from('users').update(updateData)
-      .eq('username', username).eq('association_id', associationId);
+    const { error } = await insforge.database.from('users').update({
+      role: user.role,
+      member_id: user.memberId || null,
+    }).eq('username', username).eq('association_id', associationId);
     if (error) throw error;
     await invalidate();
   };

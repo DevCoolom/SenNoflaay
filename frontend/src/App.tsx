@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { insforge } from './lib/insforge';
+import { insforge, supabase } from './lib/insforge';
 import Layout from './components/Layout';
 import Members from './components/Members';
 import Finance from './components/Finance';
@@ -19,9 +19,9 @@ import { ImportModal } from './components/ImportModal';
 import { useAppData } from './hooks/useAppData';
 import { Member, User, Objective, Event, Bill, Expense } from './types';
 import { formatCurrency } from './lib/utils';
-import { Shield, Lock, User as UserIcon, Globe, Clock, MapPin, Calendar as CalendarIcon, Users as UsersIcon, Paperclip, UploadCloud } from 'lucide-react';
+import { Shield, Lock, User as UserIcon, Clock, MapPin, Calendar as CalendarIcon, Users as UsersIcon, Paperclip, UploadCloud } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './lib/LanguageContext';
-import { hashPassword } from './lib/crypto';
+// hashPassword removed — auth is now handled by Supabase Auth
 import { Routes, Route, Navigate, useLocation, useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import MemberPortal from './components/MemberPortal';
@@ -31,8 +31,8 @@ import { useNotificationGenerator } from './hooks/useNotificationGenerator';
 
 // Auth pages
 import InvitePage from './components/InvitePage';
-import ForgotPasswordPage from './components/ForgotPasswordPage';
-import ResetPasswordPage from './components/ResetPasswordPage';
+import AuthCallbackPage from './components/AuthCallbackPage';
+import AuthResetPage from './components/AuthResetPage';
 
 // Marketing Pages
 import Home from './marketing/Home';
@@ -132,11 +132,12 @@ function AppContent() {
   );
 
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [loginData, setLoginData] = useState({ associationId: '', username: '', password: '' });
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [searchParams] = useSearchParams();
   const [isRegistering, setIsRegistering] = useState(searchParams.get('register') === 'true');
-  const [regData, setRegData] = useState({ id: '', name: '', adminUsername: '', adminPassword: '' });
+  const [regData, setRegData] = useState({ id: '', name: '', adminUsername: '', adminPassword: '', email: '' });
+  const [registrationPending, setRegistrationPending] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('register') === 'true') setIsRegistering(true);
@@ -159,58 +160,66 @@ function AppContent() {
     onConfirm: () => {}
   });
 
+  // Hydrate React user state from Supabase auth UID
+  const hydrateUser = async (authId: string) => {
+    const { data } = await insforge.database
+      .from('users')
+      .select('username, association_id, role, member_id, email')
+      .eq('auth_id', authId)
+      .maybeSingle();
+    if (!data) return; // pending registration — AuthCallbackPage will create the row
+    setUser({
+      username: data.username,
+      associationId: data.association_id,
+      role: data.role,
+      memberId: data.member_id,
+      email: data.email,
+      authId,
+    });
+  };
+
+  // Session init via Supabase Auth (replaces sessionStorage)
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) await hydrateUser(session.user.id);
+      setSessionChecked(true);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) await hydrateUser(session.user.id);
+      if (event === 'SIGNED_OUT') setUser(null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Navigate to association after login completes
+  const prevUserRef = React.useRef<User | null>(null);
+  useEffect(() => {
+    if (user && !prevUserRef.current) {
+      navigate(`/app/${user.associationId}`);
+    }
+    prevUserRef.current = user;
+  }, [user]);
+
   // Auth logic
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
     try {
-      const hashedPassword = await hashPassword(loginData.password);
-
-      // Try hashed password first (new accounts)
-      let { data, error } = await insforge.database.from('users')
-        .select('*')
-        .eq('association_id', loginData.associationId)
-        .eq('username', loginData.username)
-        .eq('password', hashedPassword)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      // Fallback: try plain-text password (legacy accounts) and auto-migrate
-      if (!data) {
-        const { data: legacyData, error: legacyError } = await insforge.database.from('users')
-          .select('*')
-          .eq('association_id', loginData.associationId)
-          .eq('username', loginData.username)
-          .eq('password', loginData.password)
-          .maybeSingle();
-
-        if (legacyError) throw legacyError;
-
-        if (legacyData) {
-          // Silently upgrade the stored password to hashed
-          await insforge.database.from('users')
-            .update({ password: hashedPassword })
-            .eq('association_id', loginData.associationId)
-            .eq('username', loginData.username);
-          data = legacyData;
-        }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginData.email,
+        password: loginData.password,
+      });
+      if (error) {
+        setLoginError(
+          error.message === 'Invalid login credentials'
+            ? 'Invalid email or password'
+            : error.message
+        );
       }
-
-      if (data) {
-        const userData = {
-          username: data.username,
-          role: data.role,
-          associationId: data.association_id,
-          memberId: data.member_id
-        };
-        setUser(userData);
-        sessionStorage.setItem('pkst_user', JSON.stringify(userData));
-      } else {
-        setLoginError('Invalid credentials');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
+      // onAuthStateChange fires SIGNED_IN → hydrateUser → setUser → navigation effect
+    } catch {
       setLoginError('Connection error');
     }
   };
@@ -218,77 +227,60 @@ function AppContent() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
-    
-    // Basic validation for ID
+
     if (!/^[a-zA-Z0-9-]+$/.test(regData.id)) {
       setLoginError('Association ID can only contain letters, numbers, and hyphens');
       return;
     }
 
     try {
-      const capitalizedUsername = regData.adminUsername.charAt(0).toUpperCase() + regData.adminUsername.slice(1);
-      const hashedPassword = await hashPassword(regData.adminPassword);
-      
-      // Check if association already exists
-      const { data: existingAssoc } = await insforge.database.from('associations')
+      // Check slug availability before burning a signUp call
+      const { data: existingAssoc } = await insforge.database
+        .from('associations')
         .select('id')
         .eq('id', regData.id)
         .maybeSingle();
 
+      // Allow re-registration if the slug exists but has no migrated superadmin yet
       if (existingAssoc) {
-        setLoginError('Association ID already exists. Please choose another one.');
-        return;
+        const { data: existingAdmin } = await insforge.database
+          .from('users')
+          .select('auth_id')
+          .eq('association_id', regData.id)
+          .eq('role', 'superadmin')
+          .not('auth_id', 'is', null)
+          .maybeSingle();
+
+        if (existingAdmin) {
+          setLoginError('This association already has an active account. Please sign in.');
+          return;
+        }
       }
 
-      const createdAt = new Date().toISOString();
-      
-      // Perform registration as a sequence of inserts (no transaction support in JS client for different tables, but usually fine for this)
-      const { error: assocError } = await insforge.database.from('associations')
-        .insert({ id: regData.id, name: regData.name, created_at: createdAt });
+      const { error } = await supabase.auth.signUp({
+        email: regData.email,
+        password: regData.adminPassword,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            pending_association_id: regData.id,
+            pending_association_name: regData.name,
+            pending_username: regData.adminUsername,
+          },
+        },
+      });
 
-      if (assocError) throw assocError;
-
-      const { error: userError } = await insforge.database.from('users')
-        .insert({
-          username: capitalizedUsername,
-          association_id: regData.id,
-          password: hashedPassword,
-          role: 'superadmin'
-        });
-
-      if (userError) throw userError;
-
-      await insforge.database.from('settings').insert([
-        { association_id: regData.id, key: 'logo_url', value: '' },
-        { association_id: regData.id, key: 'app_name', value: regData.name }
-      ]);
-
-      const userData: User = {
-        username: capitalizedUsername,
-        role: 'superadmin',
-        associationId: regData.id,
-      };
-      setUser(userData);
-      sessionStorage.setItem('pkst_user', JSON.stringify(userData));
-      navigate(`/app/${regData.id}`);
-      
+      if (error) throw error;
+      setRegistrationPending(true);
     } catch (error: any) {
-      console.error('Registration error:', error);
       setLoginError(error.message || 'Registration failed');
     }
   };
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem('pkst_user');
-    if (stored) setUser(JSON.parse(stored));
-    setSessionChecked(true);
-  }, []);
-
-  const handleLogout = (associationId?: string) => {
-    const slug = associationId || user?.associationId;
-    setUser(null);
-    sessionStorage.removeItem('pkst_user');
-    if (slug) navigate(`/app/${slug}`);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    // onAuthStateChange fires SIGNED_OUT → setUser(null)
+    navigate('/login');
   };
 
   const loginView = (
@@ -316,38 +308,83 @@ function AppContent() {
           </p>
         </div>
 
-        {!isRegistering ? (
-          <form
-            onSubmit={e => { e.preventDefault(); const slug = loginData.associationId.trim(); if (slug) navigate(`/app/${slug}`); }}
-            className="space-y-3 relative z-10"
-          >
-            <p className="text-xs text-slate-500 text-center leading-relaxed">
-              Enter your association ID to access your login page.
+        {registrationPending ? (
+          <div className="text-center py-4 relative z-10">
+            <div className="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Shield className="w-7 h-7 text-brand-600" />
+            </div>
+            <h3 className="text-lg font-serif font-bold text-slate-900 mb-2">Check Your Email</h3>
+            <p className="text-sm text-slate-500 mb-2">
+              We sent a confirmation link to
             </p>
+            <p className="text-sm font-bold text-brand-600 mb-4">{regData.email}</p>
+            <p className="text-xs text-slate-400">Click the link in the email to activate your account. The link expires in 24 hours.</p>
+            <button
+              type="button"
+              onClick={() => { setRegistrationPending(false); setIsRegistering(false); }}
+              className="mt-6 text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:underline"
+            >
+              Back to Login
+            </button>
+          </div>
+        ) : !isRegistering ? (
+          <form onSubmit={handleLogin} className="space-y-3 relative z-10">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Association ID</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
               <div className="relative group">
-                <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
+                <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
                 <input
-                  type="text"
+                  type="email"
                   required
                   autoFocus
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
-                  placeholder="e.g. my-assoc"
-                  value={loginData.associationId}
-                  onChange={e => setLoginData(prev => ({ ...prev, associationId: e.target.value }))}
+                  placeholder="your@email.com"
+                  value={loginData.email}
+                  onChange={e => setLoginData((prev: any) => ({ ...prev, email: e.target.value }))}
                 />
               </div>
             </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Password</label>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
+                <input
+                  type="password"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
+                  placeholder="Password"
+                  value={loginData.password}
+                  onChange={e => setLoginData((prev: any) => ({ ...prev, password: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            {loginError && (
+              <motion.p
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-xs text-red-500 font-bold text-center uppercase tracking-wider"
+              >
+                {loginError}
+              </motion.p>
+            )}
 
             <button
               type="submit"
               className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl transition-all shadow-xl shadow-brand-100 active:scale-[0.98] text-xs uppercase tracking-[0.2em] mt-1"
             >
-              Continue
+              Sign In
             </button>
 
-            <div className="text-center mt-4">
+            <div className="flex flex-col items-center gap-2 mt-4">
+              <button
+                type="button"
+                onClick={() => { setLoginError(''); navigate('/auth/reset'); }}
+                className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:text-brand-600 transition-colors"
+              >
+                Forgot password?
+              </button>
               <button
                 type="button"
                 onClick={() => setIsRegistering(true)}
@@ -395,6 +432,17 @@ function AppContent() {
               />
             </div>
             <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Email</label>
+              <input
+                type="email"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
+                placeholder="admin@example.com"
+                value={regData.email}
+                onChange={e => setRegData(prev => ({ ...prev, email: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Password</label>
               <input
                 type="password"
@@ -407,7 +455,7 @@ function AppContent() {
             </div>
 
             {loginError && (
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="text-xs text-red-500 font-bold text-center uppercase tracking-wider"
@@ -424,12 +472,12 @@ function AppContent() {
             </button>
 
             <div className="text-center mt-4">
-              <button 
+              <button
                 type="button"
                 onClick={() => setIsRegistering(false)}
                 className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:underline"
               >
-                Back to Login
+                Already have an account? Sign in
               </button>
             </div>
           </form>
@@ -855,10 +903,12 @@ function AppContent() {
       <Route path="/login" element={user ? <Navigate to={`/app/${user.associationId}`} /> : loginView} />
       <Route path="/donate/:associationId" element={<DonationPage />} />
 
+      {/* Global auth routes */}
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/auth/reset" element={<AuthResetPage />} />
+
       {/* Slug-based app routes */}
       <Route path="/app/:slug/invite/:token" element={<InvitePage />} />
-      <Route path="/app/:slug/reset/:token" element={<ResetPasswordPage />} />
-      <Route path="/app/:slug/reset" element={<ForgotPasswordPage />} />
       <Route path="/app/:slug" element={
         <SlugRoute
           user={user}
@@ -873,6 +923,8 @@ function AppContent() {
           regData={regData}
           setRegData={setRegData}
           handleRegister={handleRegister}
+          registrationPending={registrationPending}
+          setRegistrationPending={setRegistrationPending}
           authenticatedContent={authenticatedView}
           settings={settings}
           t={t}
@@ -1680,7 +1732,7 @@ const MemberModals = ({ type, item, onClose, onSave, objectives, members, expens
 interface SlugRouteProps {
   user: User | null;
   sessionChecked: boolean;
-  loginData: { associationId: string; username: string; password: string };
+  loginData: { email: string; password: string };
   setLoginData: (d: any) => void;
   loginError: string;
   setLoginError: (e: string) => void;
@@ -1690,6 +1742,8 @@ interface SlugRouteProps {
   regData: any;
   setRegData: (d: any) => void;
   handleRegister: (e: React.FormEvent) => Promise<void>;
+  registrationPending: boolean;
+  setRegistrationPending: (v: boolean) => void;
   authenticatedContent: React.ReactNode;
   settings: Record<string, string>;
   t: (key: any) => string;
@@ -1708,18 +1762,14 @@ function SlugRoute({
   regData,
   setRegData,
   handleRegister,
+  registrationPending,
+  setRegistrationPending,
   authenticatedContent,
   settings,
   t,
 }: SlugRouteProps) {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (slug && loginData.associationId !== slug) {
-      setLoginData((prev: any) => ({ ...prev, associationId: slug }));
-    }
-  }, [slug]);
 
   if (!sessionChecked) {
     return (
@@ -1777,20 +1827,37 @@ function SlugRoute({
           </p>
         </div>
 
-        {!isRegistering ? (
+        {registrationPending ? (
+          <div className="text-center py-4 relative z-10">
+            <div className="w-14 h-14 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Shield className="w-7 h-7 text-brand-600" />
+            </div>
+            <h3 className="text-lg font-serif font-bold text-slate-900 mb-2">Check Your Email</h3>
+            <p className="text-sm text-slate-500 mb-2">We sent a confirmation link to</p>
+            <p className="text-sm font-bold text-brand-600 mb-4">{regData.email}</p>
+            <p className="text-xs text-slate-400">Click the link in the email to activate your account.</p>
+            <button
+              type="button"
+              onClick={() => { setRegistrationPending(false); setIsRegistering(false); }}
+              className="mt-6 text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:underline"
+            >
+              Back to Login
+            </button>
+          </div>
+        ) : !isRegistering ? (
           <form onSubmit={handleLogin} className="space-y-3 relative z-10">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{t('username')}</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Email</label>
               <div className="relative group">
                 <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-brand-600 transition-colors" />
                 <input
-                  type="text"
+                  type="email"
                   required
                   autoFocus
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 outline-none transition-all text-slate-700 font-medium text-sm"
-                  placeholder={t('username')}
-                  value={loginData.username}
-                  onChange={e => setLoginData((prev: any) => ({ ...prev, username: e.target.value }))}
+                  placeholder="your@email.com"
+                  value={loginData.email}
+                  onChange={e => setLoginData((prev: any) => ({ ...prev, email: e.target.value }))}
                 />
               </div>
             </div>
@@ -1830,7 +1897,7 @@ function SlugRoute({
             <div className="flex flex-col items-center gap-2 mt-4">
               <button
                 type="button"
-                onClick={() => { setLoginError(''); navigate(`/app/${slug}/reset`); }}
+                onClick={() => { setLoginError(''); navigate('/auth/reset'); }}
                 className="text-[10px] text-slate-400 font-bold uppercase tracking-widest hover:text-brand-600 transition-colors"
               >
                 Forgot password?
@@ -1879,6 +1946,17 @@ function SlugRoute({
                 placeholder="Admin Username"
                 value={regData.adminUsername}
                 onChange={e => setRegData((prev: any) => ({ ...prev, adminUsername: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Admin Email</label>
+              <input
+                type="email"
+                required
+                className="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50/50 focus:bg-white outline-none transition-all text-sm"
+                placeholder="admin@example.com"
+                value={regData.email}
+                onChange={e => setRegData((prev: any) => ({ ...prev, email: e.target.value }))}
               />
             </div>
             <div className="space-y-1">
