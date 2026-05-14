@@ -181,12 +181,14 @@ function AppContent() {
   // Session init via Supabase Auth (replaces sessionStorage)
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) await hydrateUser(session.user.id);
+      const onAuthPage = window.location.pathname.startsWith('/auth/');
+      if (session?.user && !onAuthPage) await hydrateUser(session.user.id);
       setSessionChecked(true);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) await hydrateUser(session.user.id);
+      const onAuthPage = window.location.pathname.startsWith('/auth/');
+      if (event === 'SIGNED_IN' && session?.user && !onAuthPage) await hydrateUser(session.user.id);
       if (event === 'SIGNED_OUT') setUser(null);
     });
 

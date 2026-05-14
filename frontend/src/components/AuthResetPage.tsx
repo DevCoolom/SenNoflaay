@@ -16,20 +16,12 @@ export default function AuthResetPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('code')) {
-      supabase.auth.exchangeCodeForSession(window.location.search).then(({ error }) => {
-        if (error) {
-          setMode('error');
-          setError(error.message);
-        } else {
-          setMode('set-new-password');
-        }
-      });
-    }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    // Supabase auto-processes the ?code= URL and fires PASSWORD_RECOVERY
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY') setMode('set-new-password');
+      if (event === 'SIGNED_IN' && session && window.location.search.includes('code=')) {
+        setMode('set-new-password');
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
