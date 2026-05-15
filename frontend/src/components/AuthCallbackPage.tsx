@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase, insforge } from '../lib/insforge';
 import { Shield, AlertCircle } from 'lucide-react';
+import type { Session } from '@supabase/supabase-js';
 
 type Status = 'processing' | 'error';
 
@@ -9,42 +10,51 @@ export default function AuthCallbackPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<Status>('processing');
   const [errorMsg, setErrorMsg] = useState('');
+  const processedRef = useRef(false);
 
   useEffect(() => {
-    handleCallback();
-  }, []);
+    const processSession = async (session: Session) => {
+      if (processedRef.current) return;
+      processedRef.current = true;
 
-  const handleCallback = async () => {
-    try {
-      const { data: { session }, error: sessionError } =
-        await supabase.auth.exchangeCodeForSession(window.location.search);
+      try {
+        const authUser = session.user;
+        const meta = authUser.user_metadata ?? {};
 
-      if (sessionError || !session) throw sessionError ?? new Error('No session returned');
-
-      const authUser = session.user;
-      const meta = authUser.user_metadata ?? {};
-
-      if (meta.pending_association_id) {
-        await createAssociationAndUser(
-          authUser.id,
-          authUser.email!,
-          meta.pending_association_id,
-          meta.pending_association_name,
-          meta.pending_username ?? 'Admin',
-        );
-        navigate(`/app/${meta.pending_association_id}`, { replace: true });
-      } else if (meta.invite_token) {
-        await claimInviteAfterConfirmation(authUser.id, authUser.email!, meta);
-        navigate(`/app/${meta.invite_association_id}`, { replace: true });
-      } else {
-        // Plain sign-in confirmation — session is established, navigate to app root
-        navigate('/login', { replace: true });
+        if (meta.pending_association_id) {
+          await createAssociationAndUser(
+            authUser.id,
+            authUser.email!,
+            meta.pending_association_id,
+            meta.pending_association_name,
+            meta.pending_username ?? 'Admin',
+          );
+          navigate(`/app/${meta.pending_association_id}`, { replace: true });
+        } else if (meta.invite_token) {
+          await claimInviteAfterConfirmation(authUser.id, authUser.email!, meta);
+          navigate(`/app/${meta.invite_association_id}`, { replace: true });
+        } else {
+          navigate('/login', { replace: true });
+        }
+      } catch (err: any) {
+        setStatus('error');
+        setErrorMsg(err.message || 'Something went wrong during email confirmation');
       }
-    } catch (err: any) {
-      setStatus('error');
-      setErrorMsg(err.message || 'Something went wrong during email confirmation');
-    }
-  };
+    };
+
+    // Supabase auto-processes ?code= on init (detectSessionInUrl: true), consuming the
+    // code before this component mounts. Listen for SIGNED_IN as primary trigger and
+    // fall back to getSession() for when the event already fired before mount.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) await processSession(session);
+    });
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) await processSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const createAssociationAndUser = async (
     authId: string,
@@ -55,7 +65,6 @@ export default function AuthCallbackPage() {
   ) => {
     const capitalizedUsername = username.charAt(0).toUpperCase() + username.slice(1);
 
-    // Idempotent — skip if association already exists (re-registration or double-click)
     const { data: existingAssoc } = await insforge.database
       .from('associations')
       .select('id')
@@ -76,7 +85,6 @@ export default function AuthCallbackPage() {
       ]);
     }
 
-    // Idempotent — skip if user row already exists for this auth_id
     const { data: existingUser } = await insforge.database
       .from('users')
       .select('username')
