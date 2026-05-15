@@ -37,22 +37,33 @@ export default function AuthCallbackPage() {
           navigate('/login', { replace: true });
         }
       } catch (err: any) {
+        processedRef.current = false;
         setStatus('error');
         setErrorMsg(err.message || 'Something went wrong during email confirmation');
       }
     };
 
-    // Supabase auto-processes ?code= on init (detectSessionInUrl: true), consuming the
-    // code before this component mounts. Listen for SIGNED_IN as primary trigger and
-    // fall back to getSession() for when the event already fired before mount.
+    // onAuthStateChange handles async auto-processing (SIGNED_IN fires before component mounts)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) await processSession(session);
     });
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session) await processSession(session);
-    });
+    const init = async () => {
+      // Case 1: Supabase already auto-processed the code before this component mounted
+      const { data: { session: existing } } = await supabase.auth.getSession();
+      if (existing) { await processSession(existing); return; }
 
+      // Case 2: Supabase has not auto-processed — manually exchange the PKCE code
+      const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(window.location.search);
+      if (error) {
+        setStatus('error');
+        setErrorMsg(error.message || 'The confirmation link is invalid or has expired.');
+        return;
+      }
+      if (session) await processSession(session);
+    };
+
+    init();
     return () => subscription.unsubscribe();
   }, []);
 

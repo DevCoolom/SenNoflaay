@@ -195,6 +195,16 @@ function AppContent() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Re-hydrate after navigating away from /auth/* pages (e.g. post-callback redirect)
+  const location = useLocation();
+  useEffect(() => {
+    if (!user && sessionChecked && !location.pathname.startsWith('/auth/')) {
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        if (session?.user) await hydrateUser(session.user.id);
+      });
+    }
+  }, [location.pathname]);
+
   // Navigate to association after login completes
   const prevUserRef = React.useRef<User | null>(null);
   useEffect(() => {
