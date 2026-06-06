@@ -10,13 +10,10 @@ import Bills from '../components/Bills';
 import Fundraising from '../components/Fundraising';
 import Reports from '../components/Reports';
 import Tasks from '../components/Tasks';
-import Users from '../components/Users';
-import Settings from '../components/Settings';
-import Audit from '../components/Audit';
 import {
   DEMO_USER, DEMO_MEMBERS, DEMO_OBJECTIVES, DEMO_EXPENSES,
   DEMO_EVENTS, DEMO_BILLS, DEMO_TASKS, DEMO_CAMPAIGNS, DEMO_DONATIONS,
-  DEMO_MEMBERSHIP_FEE_CONFIG, DEMO_CORRECTIONS, DEMO_AUDIT_LOGS, DEMO_USERS,
+  DEMO_MEMBERSHIP_FEE_CONFIG, DEMO_CORRECTIONS, DEMO_AUDIT_LOGS,
 } from './demoData';
 
 const noop = () => {};
@@ -162,28 +159,6 @@ function DemoContent() {
               onDeleteTask={noop}
               onReorderTasks={noop}
             />
-          )}
-
-          {activeTab === 'users' && (
-            <div className="space-y-12">
-              <Users
-                users={DEMO_USERS}
-                currentUser={DEMO_USER}
-                onAddUser={noop}
-                onEditUser={noop}
-                onDeleteUser={noop}
-              />
-              <Settings
-                settings={{ app_name: 'FC Bern' }}
-                membershipFeeConfig={DEMO_MEMBERSHIP_FEE_CONFIG}
-                onUpdateSetting={noopAsync}
-                onUpdateFeeConfig={noopAsync}
-              />
-            </div>
-          )}
-
-          {activeTab === 'audit' && (
-            <Audit logs={DEMO_AUDIT_LOGS} />
           )}
         </Layout>
       </div>

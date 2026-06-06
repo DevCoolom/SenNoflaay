@@ -99,7 +99,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
       'text/csv': ['.csv'],
     },
     multiple: false
-  } as any);
+  });
 
   const parseFile = (file: File) => {
     const reader = new FileReader();

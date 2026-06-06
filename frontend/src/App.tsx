@@ -971,7 +971,7 @@ const MemberModals = ({ type, item, onClose, onSave, objectives, members, expens
   const { getRootProps: getReceiptRootProps, getInputProps: getReceiptInputProps, isDragActive: isReceiptDragActive } = useDropzone({
     accept: { 'image/*': [], 'application/pdf': [] },
     onDrop: onDropReceipt
-  } as any);
+  });
 
   const getTargetFee = (gender: string, isMinor: boolean) => {
     if (!membershipFeeConfig) return 0;

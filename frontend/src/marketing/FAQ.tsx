@@ -67,7 +67,7 @@ const FAQ: React.FC = () => {
   );
 };
 
-const FAQItem: React.FC<{ q: string, a: string }> = ({ q, a }) => {
+const FAQItem = ({ q, a }: { q: string, a: string }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
