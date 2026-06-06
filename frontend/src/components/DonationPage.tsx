@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { insforge } from '../lib/insforge';
 import { Campaign, Donation } from '../types';
-import { formatCurrency } from '../lib/utils';
+import { formatCurrency, cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
 

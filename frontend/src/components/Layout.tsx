@@ -173,13 +173,16 @@ const Layout: React.FC<LayoutProps> = ({
               <p className="text-sm font-bold text-slate-900 truncate">{user?.username}</p>
               <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">{user?.role} • ID: {user?.associationId}</p>
             </div>
-            <button 
-              onClick={onLogout}
-              className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-              title={t('logout')}
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
+            <button
+            type="button"
+            aria-label="Logout"
+            onClick={onLogout}
+            className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+            title={t('logout')}
+          >
+            <LogOut className="w-5 h-5" />
+            <span className="sr-only">{t('logout')}</span>
+          </button>
           </div>
         </div>
       </aside>

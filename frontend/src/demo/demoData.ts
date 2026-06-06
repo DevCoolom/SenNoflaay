@@ -234,4 +234,56 @@ export const DEMO_MEMBERSHIP_FEE_CONFIG: MembershipFeeConfig = {
 
 export const DEMO_CORRECTIONS: Correction[] = [];
 
-export const DEMO_AUDIT_LOGS: AuditLog[] = [];
+export const DEMO_USERS: User[] = [
+  {
+    username: 'Demo',
+    associationId: ASSOC,
+    role: 'superadmin',
+    email: 'admin@fcbern.ch',
+  },
+  {
+    username: 'Ahmed Diallo',
+    associationId: ASSOC,
+    role: 'admin',
+    email: 'ahmed@fcbern.ch',
+  },
+  {
+    username: 'Sofia Müller',
+    associationId: ASSOC,
+    role: 'treasury',
+    email: 'sofia@fcbern.ch',
+  },
+  {
+    username: 'Marco Rossi',
+    associationId: ASSOC,
+    role: 'controller',
+    email: 'marco@fcbern.ch',
+  },
+];
+
+export const DEMO_AUDIT_LOGS: AuditLog[] = [
+  {
+    id: 'audit-1',
+    associationId: ASSOC,
+    timestamp: '2025-03-01T10:00:00Z',
+    user: 'Ahmed Diallo',
+    action: 'Add Member',
+    details: 'Added member: Ahmed Diallo',
+  },
+  {
+    id: 'audit-2',
+    associationId: ASSOC,
+    timestamp: '2025-03-02T11:15:00Z',
+    user: 'Sofia Müller',
+    action: 'Add Payment',
+    details: 'Added payment of €80.00 for member: Sofia Müller',
+  },
+  {
+    id: 'audit-3',
+    associationId: ASSOC,
+    timestamp: '2025-03-05T14:30:00Z',
+    user: 'Ahmed Diallo',
+    action: 'Add Expense',
+    details: 'Recorded expense: Office supplies (€45.00)',
+  },
+];
