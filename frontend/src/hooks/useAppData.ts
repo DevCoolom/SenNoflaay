@@ -176,13 +176,13 @@ export const useAppData = (associationId: string | null) => {
       first_name: member.firstName,
       last_name: member.lastName,
       phone: member.tel,
-      city: member.city,
+      city: member.city || null,
       fee: member.fee,
       joined_date: member.joinedDate,
       gender: member.gender,
       is_minor: member.isMinor,
-      linked_member_id: member.linkedMemberId,
-      linked_person_name: member.linkedPersonName
+      linked_member_id: member.linkedMemberId || null,
+      linked_person_name: member.linkedPersonName || null
     });
     if (error) throw error;
     await invalidate();
@@ -195,13 +195,13 @@ export const useAppData = (associationId: string | null) => {
       first_name: member.firstName,
       last_name: member.lastName,
       phone: member.tel,
-      city: member.city,
+      city: member.city || null,
       fee: member.fee,
       joined_date: member.joinedDate,
       gender: member.gender,
       is_minor: member.isMinor,
-      linked_member_id: member.linkedMemberId,
-      linked_person_name: member.linkedPersonName
+      linked_member_id: member.linkedMemberId || null,
+      linked_person_name: member.linkedPersonName || null
     }).eq('id', id).eq('association_id', associationId);
     if (error) throw error;
     await invalidate();
@@ -272,7 +272,7 @@ export const useAppData = (associationId: string | null) => {
     const { error } = await insforge.database.from('expenses').insert({
       id,
       association_id: associationId,
-      objective_id: expense.objectiveId,
+      objective_id: expense.objectiveId || null,
       amount: expense.amount,
       date: expense.date,
       description: expense.desc,
@@ -486,8 +486,8 @@ export const useAppData = (associationId: string | null) => {
       joined_date: m.joinedDate,
       gender: m.gender,
       is_minor: m.isMinor,
-      linked_member_id: m.linkedMemberId,
-      linked_person_name: m.linkedPersonName
+      linked_member_id: m.linkedMemberId || null,
+      linked_person_name: m.linkedPersonName || null
     }));
     const { error } = await insforge.database.from('members').insert(inserts);
     if (error) throw error;
@@ -499,7 +499,7 @@ export const useAppData = (associationId: string | null) => {
     const inserts = newExpenses.map(e => ({
       id: crypto.randomUUID(),
       association_id: associationId,
-      objective_id: e.objectiveId,
+      objective_id: e.objectiveId || null,
       amount: e.amount,
       date: e.date,
       description: e.desc,
@@ -521,7 +521,7 @@ export const useAppData = (associationId: string | null) => {
       location: e.place,
       speaker: e.player,
       description: e.description,
-      book_id: e.bookId,
+      book_id: e.bookId || null,
       participants: e.participants
     }));
     const { error } = await insforge.database.from('events').insert(inserts);
