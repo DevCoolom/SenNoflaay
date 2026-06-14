@@ -1722,10 +1722,15 @@ const MemberModals = ({ type, item, onClose, onSave, objectives, members, expens
           <button 
             onClick={() => {
               const sanitizedData = { ...formData };
-              if (sanitizedData.fee === '' || isNaN(sanitizedData.fee)) sanitizedData.fee = 0;
-              if (sanitizedData.amount === '' || isNaN(sanitizedData.amount)) sanitizedData.amount = 0;
-              if (sanitizedData.target === '' || isNaN(sanitizedData.target)) sanitizedData.target = 0;
-              if (sanitizedData.participants === '' || isNaN(sanitizedData.participants)) sanitizedData.participants = 0;
+              const parseVal = (v: any) => (v === '' || v === null || v === undefined || isNaN(Number(v))) ? 0 : Number(v);
+              sanitizedData.fee = parseVal(sanitizedData.fee);
+              sanitizedData.amount = parseVal(sanitizedData.amount);
+              sanitizedData.target = parseVal(sanitizedData.target);
+              sanitizedData.participants = parseVal(sanitizedData.participants);
+              
+              if (sanitizedData.objectiveId === 'default' || sanitizedData.objectiveId === '') {
+                 sanitizedData.objectiveId = null;
+              }
               onSave(sanitizedData);
             }}
             className="px-6 py-2 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100"

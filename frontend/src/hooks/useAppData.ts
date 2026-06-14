@@ -233,7 +233,7 @@ export const useAppData = (associationId: string | null) => {
       id,
       association_id: associationId,
       member_id: memberId,
-      objective_id: payment.objectiveId,
+      objective_id: payment.objectiveId || null,
       amount: payment.amount,
       date: payment.date,
       method: payment.method
